@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardastika — Профіль</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Forum&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../assets/css/ui-shell.css">
+</head>
+<body>
+  <div id="app" class="app">
+
+    <!-- HUD -->
+    <header id="hud" class="hud">
+      <div class="hud__left">
+        <span class="hud__icon">⚔️</span>
+        <span class="hud__value" id="hudPower">180</span>
+      </div>
+
+      <div class="hud__right">
+        <div class="hud__pill" title="Silver">
+          <img class="hud__icon" src="../../assets/icons/coin-silver.svg" alt="Silver" />
+          <span class="hud__value" id="hudSilver">300</span>
+        </div>
+        <div class="hud__pill" title="Diamonds">
+          <img class="hud__icon" src="../../assets/icons/diamond.svg" alt="Diamonds" />
+          <span class="hud__value" id="hudDiamonds">0</span>
+        </div>
+        <div class="hud__pill" title="Gold">
+          <img class="hud__icon" src="../../assets/icons/coin-gold.svg" alt="Gold" />
+          <span class="hud__value" id="hudGold">12</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main screen container -->
+    <main id="screen" class="screen profile-screen">
+      <!-- Тут контент конкретної сторінки -->
+      <section class="panel">
+        <h1 class="panel__title">Профіль</h1>
+        <p class="panel__text" id="profileWho">Тут буде профіль гравця з статистикою. Каркас готовий. Далі підключимо логіку.</p>
+
+        <div class="profile-block">
+          <div class="profile-stats" aria-label="Статистика">
+            <div class="profile-stat">
+              <div class="profile-stat__label">Рівень</div>
+              <div class="profile-stat__value" id="profLevel">1</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat__label">XP бонус</div>
+              <div class="profile-stat__value" id="profXpBonus">0%</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat__label">Срібло бонус</div>
+              <div class="profile-stat__value" id="profSilverBonus">0%</div>
+            </div>
+          </div>
+
+          <div class="profile-xpbar" aria-label="Прогрес досвіду">
+            <div class="profile-xpbar__line">
+              <span>XP</span>
+              <span><span id="profXpInto">0</span>/<span id="profXpNeed">0</span></span>
+            </div>
+            <div class="profile-xpbar__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="profile-xpbar__fill" id="profXpFill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="profile-league" aria-label="Ліга дуелей">
+            <div class="profile-league__left">
+              <img id="profLeagueIcon" class="profile-league__icon" src="../../assets/icons/leagues/league-gray-1.svg" alt="Ліга">
+              <div>
+                <div class="profile-league__name" id="profLeagueName">—</div>
+                <div class="profile-league__sub">База срібла: <b id="profLeagueBaseSilver">0</b></div>
+              </div>
+            </div>
+            <label class="profile-league__select">
+              <span>Ліга</span>
+              <select id="leagueSelect"></select>
+            </label>
+          </div>
+
+          <div class="profile-duel-gold" aria-label="Ліміт золота дуелей">
+            <div>Золото сьогодні: <b><span id="profGoldToday">0</span>/<span id="profGoldLimit">0</span></b></div>
+            <div class="profile-duel-gold__hint">Ліміт = рівень (+ колекції) × титул.</div>
+          </div>
+
+          <div class="profile-form" aria-label="Бонуси">
+            <div class="profile-form__row">
+              <label for="inpGuildLevel">Рівень гільдії (%)</label>
+              <input id="inpGuildLevel" type="number" min="0" max="999" step="1">
+            </div>
+
+            <div class="profile-form__row">
+              <label for="inpXpDaily">Щоденний XP бонус (%)</label>
+              <select id="inpXpDaily">
+                <option value="0">0%</option>
+                <option value="100">100%</option>
+                <option value="200">200%</option>
+                <option value="300">300%</option>
+              </select>
+            </div>
+
+            <div class="profile-form__row profile-form__row--check">
+              <label for="inpXpPotion">Настойка XP (+100%)</label>
+              <input id="inpXpPotion" type="checkbox">
+            </div>
+
+            <div class="profile-form__row">
+              <label for="inpXpGuildArena">Арена гільдій XP (%)</label>
+              <select id="inpXpGuildArena">
+                <option value="0">0%</option>
+                <option value="20">20%</option>
+                <option value="40">40%</option>
+                <option value="60">60%</option>
+                <option value="80">80%</option>
+                <option value="100">100%</option>
+              </select>
+            </div>
+
+            <div class="profile-form__row">
+              <label for="inpXpEvent">Акційний XP бонус (%)</label>
+              <input id="inpXpEvent" type="number" min="0" max="1000" step="1">
+            </div>
+
+            <div class="profile-form__sep" role="separator"></div>
+
+            <div class="profile-form__row">
+              <label for="inpSilverDaily">Щоденний бонус срібла (%)</label>
+              <select id="inpSilverDaily">
+                <option value="0">0%</option>
+                <option value="100">100%</option>
+              </select>
+            </div>
+
+            <div class="profile-form__row profile-form__row--check">
+              <label for="inpSilverPotion">Настойка срібла (+100%)</label>
+              <input id="inpSilverPotion" type="checkbox">
+            </div>
+
+            <div class="profile-form__row">
+              <label for="inpSilverGuildArena">Арена гільдій срібло (%)</label>
+              <select id="inpSilverGuildArena">
+                <option value="0">0%</option>
+                <option value="20">20%</option>
+                <option value="40">40%</option>
+                <option value="60">60%</option>
+                <option value="80">80%</option>
+                <option value="100">100%</option>
+              </select>
+            </div>
+
+            <div class="profile-form__row">
+              <label for="inpSilverEvent">Акційний бонус срібла (%)</label>
+              <input id="inpSilverEvent" type="number" min="0" max="1000" step="1">
+            </div>
+
+            <div class="profile-form__sep" role="separator"></div>
+
+            <div class="profile-form__row profile-form__row--check">
+              <label for="inpTitleTournament">Титул “Чемпіон турніру” (×2 ліміт золота)</label>
+              <input id="inpTitleTournament" type="checkbox">
+            </div>
+
+            <div class="profile-form__row profile-form__row--check">
+              <label for="inpTitleDuel">Титул “Чемпіон дуелей” (+50% срібла)</label>
+              <input id="inpTitleDuel" type="checkbox">
+            </div>
+
+            <div class="profile-form__row profile-form__row--check">
+              <label for="inpTitleAbsolute">Титул “Абсолютний чемпіон” (міфік +1% за невдачу у магазині 50)</label>
+              <input id="inpTitleAbsolute" type="checkbox">
+            </div>
+          </div>
+
+          <div class="profile-medals" aria-label="Медалі">
+            <div class="profile-medals__title">Медалі</div>
+            <div class="profile-medals__list" id="profMedals">—</div>
+          </div>
+        </div>
+
+        <div class="duel-actions" style="margin-top: 12px;">
+          <button class="btn-attack" id="saveProfileBtn" type="button">Зберегти профіль</button>
+          <button class="btn-search" id="logoutBtn" type="button">Вийти</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toasts / Modals host -->
+    <div id="toastHost" class="toast-host" aria-live="polite"></div>
+    <div id="modalHost" class="modal-host" aria-hidden="true"></div>
+
+    <!-- Bottom navigation (3 buttons) -->
+    <nav id="botbar" class="botbar botbar--3" aria-label="Bottom navigation">
+      <button class="botbar__btn" data-route="home" type="button">
+        <span class="botbar__icon" aria-hidden="true"></span>
+        <span class="botbar__text">Головна</span>
+      </button>
+
+      <button class="botbar__btn" data-route="profile" type="button">
+        <span class="botbar__icon" aria-hidden="true"></span>
+        <span class="botbar__text">Профіль</span>
+      </button>
+
+      <button class="botbar__btn" data-route="guild" type="button">
+        <span class="botbar__icon" aria-hidden="true"></span>
+        <span class="botbar__text">Гільдія</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <script type="module" defer src="./profile.js"></script>
+  <script type="module" defer src="../../src/ui-shell.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+

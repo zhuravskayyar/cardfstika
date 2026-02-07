@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardastika — Арена</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Forum&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../assets/css/ui-shell.css">
+</head>
+<body>
+  <div id="app" class="app">
+
+    <!-- HUD -->
+    <header id="hud" class="hud">
+      <div class="hud__left">
+        <span class="hud__icon">⚔️</span>
+        <span class="hud__value" id="hudPower">180</span>
+      </div>
+
+      <div class="hud__right">
+        <div class="hud__pill" title="Silver">
+          <img class="hud__icon" src="../../assets/icons/coin-silver.svg" alt="Silver" />
+          <span class="hud__value" id="hudSilver">300</span>
+        </div>
+        <div class="hud__pill" title="Diamonds">
+          <img class="hud__icon" src="../../assets/icons/diamond.svg" alt="Diamonds" />
+          <span class="hud__value" id="hudDiamonds">0</span>
+        </div>
+        <div class="hud__pill" title="Gold">
+          <img class="hud__icon" src="../../assets/icons/coin-gold.svg" alt="Gold" />
+          <span class="hud__value" id="hudGold">12</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main screen -->
+    <main id="screen" class="screen arena-screen arena-view">
+      
+      <!-- Header -->
+      <div class="arena-header">
+        <h1 class="arena-title">Арена</h1>
+      </div>
+
+      <!-- Description Block -->
+      <div class="arena-info-block">
+        <div class="arena-description">
+          <p>Мінімальний рейтинг дуелей, який ви повинні досягти, щоб отримати доступ на арену:</p>
+        </div>
+
+        <div class="arena-requirement">
+          <span class="arena-requirement-icon"></span>
+          <span class="arena-requirement-value">2000</span>
+        </div>
+
+        <div class="arena-note">
+          Тільки найсильніші отримують право змагатися на арені!
+        </div>
+
+        <a class="arena-rules-link" href="arena-rules.html">» Правила арени «</a>
+      </div>
+
+      <!-- Menu Items -->
+      <div class="arena-menu">
+        <a class="arena-menu-item" href="tournament.html">
+          <span class="arena-menu-icon">🏆</span>
+          <span class="arena-menu-text">Турнір</span>
+        </a>
+
+        <button class="arena-menu-item" data-action="rating">
+          <span class="arena-menu-icon">📊</span>
+          <span class="arena-menu-text">Рейтинг арени</span>
+        </button>
+
+        <button class="arena-menu-item" data-action="tasks">
+          <span class="arena-menu-icon">📋</span>
+          <span class="arena-menu-text">Завдання</span>
+        </button>
+
+        <button class="arena-menu-item" data-action="shop">
+          <span class="arena-menu-icon">🛒</span>
+          <span class="arena-menu-text">Крамниця</span>
+        </button>
+      </div>
+
+    </main>
+
+    <!-- Toasts / Modals host -->
+    <div id="toastHost" class="toast-host" aria-live="polite"></div>
+    <div id="modalHost" class="modal-host" aria-hidden="true"></div>
+
+    <!-- Bottom navigation (3 buttons) -->
+    <nav id="botbar" class="botbar botbar--3" aria-label="Bottom navigation">
+      <button class="botbar__btn" data-route="home" type="button">
+        <span class="botbar__icon" aria-hidden="true"></span>
+        <span class="botbar__text">Головна</span>
+      </button>
+
+      <button class="botbar__btn" data-route="profile" type="button">
+        <span class="botbar__icon" aria-hidden="true"></span>
+        <span class="botbar__text">Профіль</span>
+      </button>
+
+      <button class="botbar__btn" data-route="guild" type="button">
+        <span class="botbar__icon" aria-hidden="true"></span>
+        <span class="botbar__text">Гільдія</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <script type="module" defer src="../../src/ui-shell.js"></script>
+  <script type="module" defer src="arena.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+

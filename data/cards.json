@@ -1,0 +1,2397 @@
+{
+  "meta": {
+    "version": 1,
+    "style": "medieval_fantasy",
+    "elements": [
+      "fire",
+      "water",
+      "air",
+      "earth"
+    ]
+  },
+  "cards": [
+    {
+      "id": "starter_fire_swordsman",
+      "title": "Мечник",
+      "element": "fire",
+      "basePower": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "starter_fire_acolyte",
+      "title": "Аколіт",
+      "element": "fire",
+      "basePower": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "starter_fire_scout",
+      "title": "Розвідник",
+      "element": "fire",
+      "basePower": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "starter_water_sailor",
+      "title": "Моряк",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "starter_water_healer",
+      "title": "Цілитель",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "starter_air_messenger",
+      "title": "Вісник",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "starter_air_fencer",
+      "title": "Фехтувальник",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "starter_earth_guard",
+      "title": "Вартівник",
+      "element": "earth",
+      "basePower": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "starter_earth_miner",
+      "title": "Шахтар",
+      "element": "earth",
+      "basePower": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "sea_lord_triton",
+      "title": "Посейдон",
+      "element": "water",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Господарі морів"
+      ]
+    },
+    {
+      "id": "storm_corsair",
+      "title": "Адмірал",
+      "element": "air",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Господарі морів"
+      ]
+    },
+    {
+      "id": "reef_sentinel",
+      "title": "Океаніда",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "uncommon",
+      "collections": [
+        "Господарі морів"
+      ]
+    },
+    {
+      "id": "siren_choir",
+      "title": "Тритон",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Господарі морів"
+      ]
+    },
+    {
+      "id": "depth_harpooner",
+      "title": "Сирена",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Господарі морів"
+      ]
+    },
+    {
+      "id": "salt_mage",
+      "title": "Кракен",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Господарі морів"
+      ]
+    },
+    {
+      "id": "gale_sailmaster",
+      "title": "Дельфін",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Господарі морів"
+      ]
+    },
+    {
+      "id": "black_keel_captain",
+      "title": "Ундина",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Господарі морів"
+      ]
+    },
+    {
+      "id": "leviathan_whelp",
+      "title": "Левіафан",
+      "element": "water",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Господарі морів"
+      ]
+    },
+    {
+      "id": "horde_warlord",
+      "title": "Вождь",
+      "element": "fire",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Сила орди"
+      ]
+    },
+    {
+      "id": "ash_berserker",
+      "title": "Шаман",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Сила орди"
+      ]
+    },
+    {
+      "id": "steppe_raider",
+      "title": "Берсерк",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Сила орди"
+      ]
+    },
+    {
+      "id": "iron_shaman",
+      "title": "Орк",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Сила орди"
+      ]
+    },
+    {
+      "id": "war_drums",
+      "title": "Гоблін",
+      "element": "fire",
+      "basePower": 11,
+      "rarity": "common",
+      "collections": [
+        "Сила орди"
+      ]
+    },
+    {
+      "id": "boar_rider",
+      "title": "Троль",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Сила орди"
+      ]
+    },
+    {
+      "id": "wind_scavenger",
+      "title": "Вершник",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Сила орди"
+      ]
+    },
+    {
+      "id": "blood_banner",
+      "title": "Балиста",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Сила орди"
+      ]
+    },
+    {
+      "id": "great_khan",
+      "title": "Велетень",
+      "element": "earth",
+      "basePower": 19,
+      "rarity": "epic",
+      "collections": [
+        "Сила орди"
+      ]
+    },
+    {
+      "id": "sky_paladin",
+      "title": "Архангел",
+      "element": "air",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Небесні герої"
+      ]
+    },
+    {
+      "id": "sun_lancer",
+      "title": "Грифон",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Небесні герої"
+      ]
+    },
+    {
+      "id": "cloud_archer",
+      "title": "Пегас",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Небесні герої"
+      ]
+    },
+    {
+      "id": "aerie_guard",
+      "title": "Фенікс",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Небесні герої"
+      ]
+    },
+    {
+      "id": "zephyr_duelist",
+      "title": "Орел",
+      "element": "air",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Небесні герої"
+      ]
+    },
+    {
+      "id": "ember_seraph",
+      "title": "Валькірія",
+      "element": "fire",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Небесні герої"
+      ]
+    },
+    {
+      "id": "storm_harbinger",
+      "title": "Сильф",
+      "element": "air",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Небесні герої"
+      ]
+    },
+    {
+      "id": "sky_healer",
+      "title": "Гарпія",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Небесні герої"
+      ]
+    },
+    {
+      "id": "celestial_commander",
+      "title": "Віврен",
+      "element": "air",
+      "basePower": 20,
+      "rarity": "epic",
+      "collections": [
+        "Небесні герої"
+      ]
+    },
+    {
+      "id": "forest_druid",
+      "title": "Лісовик",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Мешканці лісу"
+      ]
+    },
+    {
+      "id": "moss_knight",
+      "title": "Дріада",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "uncommon",
+      "collections": [
+        "Мешканці лісу"
+      ]
+    },
+    {
+      "id": "thorn_huntress",
+      "title": "Ельф",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Мешканці лісу"
+      ]
+    },
+    {
+      "id": "brook_sprite",
+      "title": "Кентавр",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Мешканці лісу"
+      ]
+    },
+    {
+      "id": "owl_scout",
+      "title": "Сатир",
+      "element": "air",
+      "basePower": 11,
+      "rarity": "common",
+      "collections": [
+        "Мешканці лісу"
+      ]
+    },
+    {
+      "id": "sap_guardian",
+      "title": "Ент",
+      "element": "earth",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Мешканці лісу"
+      ]
+    },
+    {
+      "id": "wildfire_fox",
+      "title": "Пікс",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Мешканці лісу"
+      ]
+    },
+    {
+      "id": "ancient_ent",
+      "title": "Єдиноріг",
+      "element": "earth",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Мешканці лісу"
+      ]
+    },
+    {
+      "id": "leaf_blade",
+      "title": "Перевертень",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Мешканці лісу"
+      ]
+    },
+    {
+      "id": "elem_flame_spark",
+      "title": "Іфрит",
+      "element": "fire",
+      "basePower": 10,
+      "rarity": "common",
+      "collections": [
+        "Елементалі"
+      ]
+    },
+    {
+      "id": "elem_tide_drop",
+      "title": "Ундін",
+      "element": "water",
+      "basePower": 10,
+      "rarity": "common",
+      "collections": [
+        "Елементалі"
+      ]
+    },
+    {
+      "id": "elem_gale_wisp",
+      "title": "Шторм",
+      "element": "air",
+      "basePower": 10,
+      "rarity": "common",
+      "collections": [
+        "Елементалі"
+      ]
+    },
+    {
+      "id": "elem_stone_seed",
+      "title": "Сильф",
+      "element": "earth",
+      "basePower": 10,
+      "rarity": "common",
+      "collections": [
+        "Елементалі"
+      ]
+    },
+    {
+      "id": "war_elem_flamebrand",
+      "title": "Бойовий Іфрит",
+      "element": "fire",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Бойові елементалі"
+      ]
+    },
+    {
+      "id": "war_elem_tidehammer",
+      "title": "Бойовий Ундін",
+      "element": "water",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Бойові елементалі"
+      ]
+    },
+    {
+      "id": "war_elem_stormclaw",
+      "title": "Бойовий Гном",
+      "element": "air",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Бойові елементалі"
+      ]
+    },
+    {
+      "id": "war_elem_rockfist",
+      "title": "Бойовий Сильф",
+      "element": "earth",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Бойові елементалі"
+      ]
+    },
+    {
+      "id": "march8_queen_of_spring",
+      "title": "Флора",
+      "element": "air",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_flower_enchantress",
+      "title": "Деметра",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_ribbon_duchess",
+      "title": "Лада",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_lilac_guard",
+      "title": "Німфа",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_rose_blade",
+      "title": "Фея",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_pearl_healer",
+      "title": "Білосніжка",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_silk_sorceress",
+      "title": "Весталка",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_garden_warden",
+      "title": "Аврора",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_sun_priestess",
+      "title": "Ірида",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_moon_priestess",
+      "title": "Берегиня",
+      "element": "water",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_lark_messenger",
+      "title": "Мокоша",
+      "element": "air",
+      "basePower": 11,
+      "rarity": "common",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_honey_alchemist",
+      "title": "Зефір",
+      "element": "earth",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_crown_of_blossom",
+      "title": "Росана",
+      "element": "air",
+      "basePower": 16,
+      "rarity": "epic",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_flame_of_heart",
+      "title": "Геліада",
+      "element": "fire",
+      "basePower": 16,
+      "rarity": "epic",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "march8_lady_of_banners",
+      "title": "Веста",
+      "element": "earth",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "8 березня"
+      ]
+    },
+    {
+      "id": "feb23_frontline_captain",
+      "title": "Захисник",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "23 лютого"
+      ]
+    },
+    {
+      "id": "feb23_shield_brother",
+      "title": "Полководець",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "23 лютого"
+      ]
+    },
+    {
+      "id": "feb23_siege_master",
+      "title": "Паладин",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "23 лютого"
+      ]
+    },
+    {
+      "id": "feb23_field_medic",
+      "title": "Воїн",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "23 лютого"
+      ]
+    },
+    {
+      "id": "feb23_banner_bearer",
+      "title": "Герой",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "23 лютого"
+      ]
+    },
+    {
+      "id": "feb23_steel_sergeant",
+      "title": "Вартовий",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "23 лютого"
+      ]
+    },
+    {
+      "id": "feb23_fire_volley",
+      "title": "Дружинник",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "23 лютого"
+      ]
+    },
+    {
+      "id": "feb23_trench_guard",
+      "title": "Егід",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "23 лютого"
+      ]
+    },
+    {
+      "id": "feb23_veteran_commander",
+      "title": "Меч Правди",
+      "element": "earth",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "23 лютого"
+      ]
+    },
+    {
+      "id": "anc_dragon_pyroarch",
+      "title": "Алдуїн",
+      "element": "fire",
+      "basePower": 22,
+      "rarity": "legendary",
+      "collections": [
+        "Древні дракони"
+      ]
+    },
+    {
+      "id": "anc_dragon_abysswyrm",
+      "title": "Ніддгег",
+      "element": "water",
+      "basePower": 22,
+      "rarity": "legendary",
+      "collections": [
+        "Древні дракони"
+      ]
+    },
+    {
+      "id": "anc_dragon_terralith",
+      "title": "Йормунганд",
+      "element": "earth",
+      "basePower": 22,
+      "rarity": "legendary",
+      "collections": [
+        "Древні дракони"
+      ]
+    },
+    {
+      "id": "rare_dragon_cinderwing",
+      "title": "Вермітракс",
+      "element": "fire",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Рідкісні дракони"
+      ]
+    },
+    {
+      "id": "rare_dragon_frostfin",
+      "title": "Сапфіра",
+      "element": "water",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Рідкісні дракони"
+      ]
+    },
+    {
+      "id": "rare_dragon_thunderquill",
+      "title": "Смарагд",
+      "element": "air",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Рідкісні дракони"
+      ]
+    },
+    {
+      "id": "rare_dragon_stonemaw",
+      "title": "Астерія",
+      "element": "earth",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Рідкісні дракони"
+      ]
+    },
+    {
+      "id": "myth_griffin_king",
+      "title": "Сфінкс",
+      "element": "air",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Міфічні створіння"
+      ]
+    },
+    {
+      "id": "myth_kraken_spawn",
+      "title": "Мінотавр",
+      "element": "water",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Міфічні створіння"
+      ]
+    },
+    {
+      "id": "myth_basilisk",
+      "title": "Медуза",
+      "element": "earth",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Міфічні створіння"
+      ]
+    },
+    {
+      "id": "myth_salamander_prime",
+      "title": "Химера",
+      "element": "fire",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Міфічні створіння"
+      ]
+    },
+    {
+      "id": "archmage_ember",
+      "title": "Піроманс",
+      "element": "fire",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Вищі маги"
+      ]
+    },
+    {
+      "id": "archmage_tide",
+      "title": "Гідроманс",
+      "element": "water",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Вищі маги"
+      ]
+    },
+    {
+      "id": "archmage_gale",
+      "title": "Геоманс",
+      "element": "air",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Вищі маги"
+      ]
+    },
+    {
+      "id": "archmage_stone",
+      "title": "Аероманс",
+      "element": "earth",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Вищі маги"
+      ]
+    },
+    {
+      "id": "urfin_mutant_fumetail",
+      "title": "Покидьок",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Мутанти Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_mutant_brinehide",
+      "title": "Виродок",
+      "element": "water",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Мутанти Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_mutant_whirlclaw",
+      "title": "Потвора",
+      "element": "air",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Мутанти Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_mutant_bonegranite",
+      "title": "Абоміна",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Мутанти Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_giant_forge",
+      "title": "Колос",
+      "element": "fire",
+      "basePower": 19,
+      "rarity": "epic",
+      "collections": [
+        "Гіганти Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_giant_flood",
+      "title": "Голем",
+      "element": "water",
+      "basePower": 19,
+      "rarity": "epic",
+      "collections": [
+        "Гіганти Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_giant_tempest",
+      "title": "Титан",
+      "element": "air",
+      "basePower": 19,
+      "rarity": "epic",
+      "collections": [
+        "Гіганти Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_giant_mountain",
+      "title": "Циклоп",
+      "element": "earth",
+      "basePower": 19,
+      "rarity": "epic",
+      "collections": [
+        "Гіганти Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_fav_redhound",
+      "title": "Наместник",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Фаворити Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_fav_rivercat",
+      "title": "Гладіатор",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Фаворити Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_fav_skyfalcon",
+      "title": "Алхімік",
+      "element": "air",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Фаворити Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_fav_stoneboar",
+      "title": "Некромант",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Фаворити Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_soldier_cinder",
+      "title": "П'яхур",
+      "element": "fire",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Солдати Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_soldier_brine",
+      "title": "Арбалетник",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Солдати Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_soldier_gust",
+      "title": "Гальбердник",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Солдати Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_soldier_mud",
+      "title": "Шабльник",
+      "element": "earth",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Солдати Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_soldier_flamebow",
+      "title": "Ратник",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Солдати Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_soldier_riverbow",
+      "title": "Драгун",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Солдати Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_soldier_skybow",
+      "title": "Ланцер",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Солдати Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_soldier_stonebow",
+      "title": "Преторіанець",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Солдати Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_general_pyrestaff",
+      "title": "Борей",
+      "element": "fire",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Генерали Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_general_tidehelm",
+      "title": "Нотус",
+      "element": "water",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Генерали Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_general_galeblade",
+      "title": "Евр",
+      "element": "air",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Генерали Урфіна"
+      ]
+    },
+    {
+      "id": "urfin_general_stonecrown",
+      "title": "Зефір",
+      "element": "earth",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Генерали Урфіна"
+      ]
+    },
+    {
+      "id": "mech_gear_savant",
+      "title": "Інженер",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Механісти"
+      ]
+    },
+    {
+      "id": "mech_boiler_knight",
+      "title": "Годинникар",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Механісти"
+      ]
+    },
+    {
+      "id": "mech_hydraulic_smith",
+      "title": "Конструктор",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Механісти"
+      ]
+    },
+    {
+      "id": "mech_aero_glider",
+      "title": "Деміург",
+      "element": "air",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Механісти"
+      ]
+    },
+    {
+      "id": "witch_cinder_hex",
+      "title": "Селена",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Чарівниці"
+      ]
+    },
+    {
+      "id": "witch_rain_blessing",
+      "title": "Астра",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Чарівниці"
+      ]
+    },
+    {
+      "id": "witch_whirl_charm",
+      "title": "Ігніс",
+      "element": "air",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Чарівниці"
+      ]
+    },
+    {
+      "id": "witch_root_bind",
+      "title": "Віта",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Чарівниці"
+      ]
+    },
+    {
+      "id": "winter_frost_oath",
+      "title": "Снігуронька",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Зимове підсилення"
+      ]
+    },
+    {
+      "id": "winter_ice_ward",
+      "title": "Морозко",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Зимове підсилення"
+      ]
+    },
+    {
+      "id": "winter_snow_hawk",
+      "title": "Трескун",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Зимове підсилення"
+      ]
+    },
+    {
+      "id": "winter_hearth_flame",
+      "title": "Снігур",
+      "element": "fire",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Зимове підсилення"
+      ]
+    },
+    {
+      "id": "winter_frozen_earth",
+      "title": "Завірюха",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Зимове підсилення"
+      ]
+    },
+    {
+      "id": "winter_blizzard_call",
+      "title": "Льодяничка",
+      "element": "air",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Зимове підсилення"
+      ]
+    },
+    {
+      "id": "winter_ice_titan",
+      "title": "Вовк",
+      "element": "water",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Зимове підсилення"
+      ]
+    },
+    {
+      "id": "gnome_baker",
+      "title": "Коваль",
+      "element": "earth",
+      "basePower": 10,
+      "rarity": "common",
+      "collections": [
+        "Мирні гноми"
+      ]
+    },
+    {
+      "id": "gnome_brewer",
+      "title": "Гірник",
+      "element": "water",
+      "basePower": 10,
+      "rarity": "common",
+      "collections": [
+        "Мирні гноми"
+      ]
+    },
+    {
+      "id": "gnome_tinkerer",
+      "title": "Ювелір",
+      "element": "air",
+      "basePower": 10,
+      "rarity": "common",
+      "collections": [
+        "Мирні гноми"
+      ]
+    },
+    {
+      "id": "gnome_lanternkeeper",
+      "title": "Старійшина",
+      "element": "fire",
+      "basePower": 10,
+      "rarity": "common",
+      "collections": [
+        "Мирні гноми"
+      ]
+    },
+    {
+      "id": "war_gnome_axeman",
+      "title": "Воїн",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Бойові гноми"
+      ]
+    },
+    {
+      "id": "war_gnome_bombard",
+      "title": "Лютогнів",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Бойові гноми"
+      ]
+    },
+    {
+      "id": "war_gnome_rune_slinger",
+      "title": "Ратобойець",
+      "element": "air",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Бойові гноми"
+      ]
+    },
+    {
+      "id": "war_gnome_shieldbearer",
+      "title": "Король",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Бойові гноми"
+      ]
+    },
+    {
+      "id": "berserk_cinderfang",
+      "title": "Полумняний",
+      "element": "fire",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Люті Берсерки"
+      ]
+    },
+    {
+      "id": "berserk_riptide",
+      "title": "Кровожер",
+      "element": "water",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Люті Берсерки"
+      ]
+    },
+    {
+      "id": "berserk_galehowl",
+      "title": "Шаленець",
+      "element": "air",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Люті Берсерки"
+      ]
+    },
+    {
+      "id": "berserk_stonewrath",
+      "title": "Вовкодлак",
+      "element": "earth",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Люті Берсерки"
+      ]
+    },
+    {
+      "id": "treasure_mapkeeper",
+      "title": "Археолог",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Мисливці за скарбами"
+      ]
+    },
+    {
+      "id": "gold_digger",
+      "title": "Гробошукач",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Мисливці за скарбами"
+      ]
+    },
+    {
+      "id": "relic_diver",
+      "title": "Артефактник",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Мисливці за скарбами"
+      ]
+    },
+    {
+      "id": "vault_breaker",
+      "title": "Скарбошукач",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Мисливці за скарбами"
+      ]
+    },
+    {
+      "id": "dragon_tamer_ember",
+      "title": "Учениця",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Укротительки драконів"
+      ]
+    },
+    {
+      "id": "dragon_tamer_mist",
+      "title": "Вершниця",
+      "element": "water",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Укротительки драконів"
+      ]
+    },
+    {
+      "id": "dragon_tamer_zephyr",
+      "title": "Повелителька",
+      "element": "air",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Укротительки драконів"
+      ]
+    },
+    {
+      "id": "dragon_tamer_rock",
+      "title": "Даенеріс",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Укротительки драконів"
+      ]
+    },
+    {
+      "id": "dragon_fan_storyteller",
+      "title": "Друг",
+      "element": "air",
+      "basePower": 11,
+      "rarity": "common",
+      "collections": [
+        "Любителі драконів"
+      ]
+    },
+    {
+      "id": "dragon_fan_scale_polisher",
+      "title": "Шепотун",
+      "element": "earth",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Любителі драконів"
+      ]
+    },
+    {
+      "id": "dragon_fan_fireworks",
+      "title": "Співець",
+      "element": "fire",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Любителі драконів"
+      ]
+    },
+    {
+      "id": "dragon_fan_lake_watcher",
+      "title": "Обранець",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Любителі драконів"
+      ]
+    },
+    {
+      "id": "anc_order_prior",
+      "title": "Послушник",
+      "element": "earth",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Древній Орден"
+      ]
+    },
+    {
+      "id": "anc_order_torchbearer",
+      "title": "Адепт",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Древній Орден"
+      ]
+    },
+    {
+      "id": "anc_order_vigilant",
+      "title": "Магістр",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Древній Орден"
+      ]
+    },
+    {
+      "id": "anc_order_sanctifier",
+      "title": "Примат",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Древній Орден"
+      ]
+    },
+    {
+      "id": "anc_order_reliquary_guard",
+      "title": "Кустодій",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "uncommon",
+      "collections": [
+        "Древній Орден"
+      ]
+    },
+    {
+      "id": "anc_order_high_inquisitor",
+      "title": "Патріарх",
+      "element": "fire",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Древній Орден"
+      ]
+    },
+    {
+      "id": "diamond_brotherhood_master",
+      "title": "Брат",
+      "element": "earth",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Алмазне братство"
+      ]
+    },
+    {
+      "id": "diamond_brotherhood_blade",
+      "title": "Рицар",
+      "element": "air",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Алмазне братство"
+      ]
+    },
+    {
+      "id": "diamond_brotherhood_bulwark",
+      "title": "Кустодій",
+      "element": "earth",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Алмазне братство"
+      ]
+    },
+    {
+      "id": "diamond_brotherhood_oathflame",
+      "title": "Магістр",
+      "element": "fire",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Алмазне братство"
+      ]
+    },
+    {
+      "id": "z_air_gemini",
+      "title": "Близнюки",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Повітряні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_air_libra",
+      "title": "Терези",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Повітряні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_air_aquarius",
+      "title": "Водолій",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Повітряні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_earth_taurus",
+      "title": "Телець",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Земні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_earth_virgo",
+      "title": "Діва",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Земні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_earth_capricorn",
+      "title": "Козеріг",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Земні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_fire_aries",
+      "title": "Овен",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Вогняні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_fire_leo",
+      "title": "Лев",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Вогняні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_fire_sagittarius",
+      "title": "Стрілець",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Вогняні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_water_cancer",
+      "title": "Рак",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Водні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_water_scorpio",
+      "title": "Скорпіон",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Водні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "z_water_pisces",
+      "title": "Риби",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "uncommon",
+      "collections": [
+        "Водні знаки зодіаку"
+      ]
+    },
+    {
+      "id": "voodoo_bone_priest",
+      "title": "Шаман",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Культ Вуду"
+      ]
+    },
+    {
+      "id": "voodoo_drum_spirit",
+      "title": "Жриця",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Культ Вуду"
+      ]
+    },
+    {
+      "id": "voodoo_flame_doll",
+      "title": "Боко",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Культ Вуду"
+      ]
+    },
+    {
+      "id": "voodoo_tide_charm",
+      "title": "Унган",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Культ Вуду"
+      ]
+    },
+    {
+      "id": "holy_shore_pilgrim",
+      "title": "Страж",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Священні Береги"
+      ]
+    },
+    {
+      "id": "holy_shore_tide_monk",
+      "title": "Жриця",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Священні Береги"
+      ]
+    },
+    {
+      "id": "holy_shore_salt_knight",
+      "title": "Кустодій",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Священні Береги"
+      ]
+    },
+    {
+      "id": "holy_shore_lighthouse_flame",
+      "title": "Володар",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Священні Береги"
+      ]
+    },
+    {
+      "id": "great_road_caravan_guard",
+      "title": "Мандрівник",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Великий Шлях"
+      ]
+    },
+    {
+      "id": "great_road_wayfinder",
+      "title": "Провідник",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Великий Шлях"
+      ]
+    },
+    {
+      "id": "great_road_innkeeper",
+      "title": "Хранитель",
+      "element": "fire",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Великий Шлях"
+      ]
+    },
+    {
+      "id": "great_road_river_ferryman",
+      "title": "Майстер",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Великий Шлях"
+      ]
+    },
+    {
+      "id": "tsarstvo_bogatyr",
+      "title": "Іван-Царевич",
+      "element": "earth",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Тридесяте Царство"
+      ]
+    },
+    {
+      "id": "tsarstvo_firebird",
+      "title": "Василіса",
+      "element": "fire",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Тридесяте Царство"
+      ]
+    },
+    {
+      "id": "tsarstvo_rusalka",
+      "title": "Баба-Яга",
+      "element": "water",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Тридесяте Царство"
+      ]
+    },
+    {
+      "id": "tsarstvo_whirl_herald",
+      "title": "Кощій",
+      "element": "air",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Тридесяте Царство"
+      ]
+    },
+    {
+      "id": "west_mischief_jester",
+      "title": "Бедуїн",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Західні Пустощі"
+      ]
+    },
+    {
+      "id": "west_mischief_scamp",
+      "title": "Шейх",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Західні Пустощі"
+      ]
+    },
+    {
+      "id": "west_mischief_dune_runner",
+      "title": "Страж",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Західні Пустощі"
+      ]
+    },
+    {
+      "id": "west_mischief_oasis_thief",
+      "title": "Султан",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Західні Пустощі"
+      ]
+    },
+    {
+      "id": "cat_ember_purr",
+      "title": "Чешир",
+      "element": "fire",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Чудові Коти"
+      ]
+    },
+    {
+      "id": "cat_river_whisker",
+      "title": "Перро",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Чудові Коти"
+      ]
+    },
+    {
+      "id": "cat_sky_slink",
+      "title": "Сфінкс",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Чудові Коти"
+      ]
+    },
+    {
+      "id": "cat_stone_paw",
+      "title": "Багіра",
+      "element": "earth",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Чудові Коти"
+      ]
+    },
+    {
+      "id": "choice_air_omen",
+      "title": "Еол",
+      "element": "air",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Вибір Повітря"
+      ]
+    },
+    {
+      "id": "choice_air_herald",
+      "title": "Борей",
+      "element": "air",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Вибір Повітря"
+      ]
+    },
+    {
+      "id": "choice_air_vow",
+      "title": "Зефір",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Вибір Повітря"
+      ]
+    },
+    {
+      "id": "choice_air_avatar",
+      "title": "Уран",
+      "element": "air",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Вибір Повітря"
+      ]
+    },
+    {
+      "id": "choice_earth_omen",
+      "title": "Гея",
+      "element": "earth",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Вибір Землі"
+      ]
+    },
+    {
+      "id": "choice_earth_herald",
+      "title": "Атлант",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Вибір Землі"
+      ]
+    },
+    {
+      "id": "choice_earth_vow",
+      "title": "Гефест",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Вибір Землі"
+      ]
+    },
+    {
+      "id": "choice_earth_avatar",
+      "title": "Кронос",
+      "element": "earth",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Вибір Землі"
+      ]
+    },
+    {
+      "id": "choice_fire_omen",
+      "title": "Прометей",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Вибір Вогню"
+      ]
+    },
+    {
+      "id": "choice_fire_herald",
+      "title": "Гефест",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Вибір Вогню"
+      ]
+    },
+    {
+      "id": "choice_fire_vow",
+      "title": "Вулкан",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Вибір Вогню"
+      ]
+    },
+    {
+      "id": "choice_fire_avatar",
+      "title": "Гелій",
+      "element": "fire",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Вибір Вогню"
+      ]
+    },
+    {
+      "id": "choice_water_omen",
+      "title": "Океан",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Вибір Води"
+      ]
+    },
+    {
+      "id": "choice_water_herald",
+      "title": "Нептун",
+      "element": "water",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Вибір Води"
+      ]
+    },
+    {
+      "id": "choice_water_vow",
+      "title": "Тритон",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Вибір Води"
+      ]
+    },
+    {
+      "id": "choice_water_avatar",
+      "title": "Посейдон",
+      "element": "water",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Вибір Води"
+      ]
+    },
+    {
+      "id": "flame_legion_centurion",
+      "title": "Легіонер",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Легіон Полум'я"
+      ]
+    },
+    {
+      "id": "flame_legion_pyromancer",
+      "title": "Паладин",
+      "element": "fire",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Легіон Полум'я"
+      ]
+    },
+    {
+      "id": "flame_legion_burnguard",
+      "title": "Центуріон",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Легіон Полум'я"
+      ]
+    },
+    {
+      "id": "flame_legion_infernal_standard",
+      "title": "Легат",
+      "element": "fire",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Легіон Полум'я"
+      ]
+    },
+    {
+      "id": "storm_breath_rider",
+      "title": "Борей",
+      "element": "air",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Подих Бурі"
+      ]
+    },
+    {
+      "id": "storm_breath_spark",
+      "title": "Зевс",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Подих Бурі"
+      ]
+    },
+    {
+      "id": "storm_breath_thunder_caller",
+      "title": "Перун",
+      "element": "air",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Подих Бурі"
+      ]
+    },
+    {
+      "id": "storm_breath_tempest_lord",
+      "title": "Тайфун",
+      "element": "air",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Подих Бурі"
+      ]
+    },
+    {
+      "id": "deep_machine_diver",
+      "title": "Наутілус",
+      "element": "water",
+      "basePower": 14,
+      "rarity": "uncommon",
+      "collections": [
+        "Глибинні Машини"
+      ]
+    },
+    {
+      "id": "deep_machine_anchor",
+      "title": "Мехакракен",
+      "element": "earth",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Глибинні Машини"
+      ]
+    },
+    {
+      "id": "deep_machine_boiler",
+      "title": "Мехалевіафан",
+      "element": "fire",
+      "basePower": 15,
+      "rarity": "rare",
+      "collections": [
+        "Глибинні Машини"
+      ]
+    },
+    {
+      "id": "deep_machine_pressure_core",
+      "title": "Абісаль",
+      "element": "water",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Глибинні Машини"
+      ]
+    },
+    {
+      "id": "forge_titan_anvil",
+      "title": "Бронтес",
+      "element": "earth",
+      "basePower": 18,
+      "rarity": "epic",
+      "collections": [
+        "Титани Ковки"
+      ]
+    },
+    {
+      "id": "forge_titan_bellows",
+      "title": "Гефест",
+      "element": "air",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Титани Ковки"
+      ]
+    },
+    {
+      "id": "forge_titan_slag",
+      "title": "Вулкан",
+      "element": "fire",
+      "basePower": 17,
+      "rarity": "epic",
+      "collections": [
+        "Титани Ковки"
+      ]
+    },
+    {
+      "id": "forge_titan_quench",
+      "title": "Міоллнір",
+      "element": "water",
+      "basePower": 16,
+      "rarity": "rare",
+      "collections": [
+        "Титани Ковки"
+      ]
+    },
+    {
+      "id": "drm_basics_scale_rune",
+      "title": "Неофіт",
+      "element": "earth",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Основи магії драконів"
+      ]
+    },
+    {
+      "id": "drm_basics_breath_focus",
+      "title": "Адепт",
+      "element": "air",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Основи магії драконів"
+      ]
+    },
+    {
+      "id": "drm_basics_ember_script",
+      "title": "Дракономанс",
+      "element": "fire",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Основи магії драконів"
+      ]
+    },
+    {
+      "id": "drm_basics_tide_sigils",
+      "title": "Архімаг",
+      "element": "water",
+      "basePower": 12,
+      "rarity": "common",
+      "collections": [
+        "Основи магії драконів"
+      ]
+    },
+    {
+      "id": "drm_heal_spring_scale",
+      "title": "Асклепій",
+      "element": "water",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Зцілююча магія драконів"
+      ]
+    },
+    {
+      "id": "drm_heal_ashen_balm",
+      "title": "Гігея",
+      "element": "fire",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Зцілююча магія драконів"
+      ]
+    },
+    {
+      "id": "drm_heal_wind_salve",
+      "title": "Панацея",
+      "element": "air",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Зцілююча магія драконів"
+      ]
+    },
+    {
+      "id": "drm_heal_stone_ward",
+      "title": "Гіппократ",
+      "element": "earth",
+      "basePower": 13,
+      "rarity": "common",
+      "collections": [
+        "Зцілююча магія драконів"
+      ]
+    }
+  ]
+}

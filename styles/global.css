@@ -1,0 +1,30 @@
+/* styles/global.css — minimal reset/shared defaults */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "EB Garamond", serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(255, 220, 120, 0.55);
+  outline-offset: 2px;
+}
+

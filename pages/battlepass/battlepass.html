@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardastika — Алмазні нагороди</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Forum&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../assets/css/ui-shell.css">
+</head>
+<body>
+  <div id="app" class="app">
+
+    <!-- HUD -->
+    <header id="hud" class="hud">
+      <div class="hud__left">
+        <span class="hud__icon">⚔️</span>
+        <span class="hud__value" id="hudPower">180</span>
+      </div>
+
+      <div class="hud__right">
+        <div class="hud__pill" title="Silver">
+          <img class="hud__icon" src="../../assets/icons/coin-silver.svg" alt="Silver" />
+          <span class="hud__value" id="hudSilver">300</span>
+        </div>
+        <div class="hud__pill" title="Diamonds">
+          <img class="hud__icon" src="../../assets/icons/diamond.svg" alt="Diamonds" />
+          <span class="hud__value" id="hudDiamonds">0</span>
+        </div>
+        <div class="hud__pill" title="Gold">
+          <img class="hud__icon" src="../../assets/icons/coin-gold.svg" alt="Gold" />
+          <span class="hud__value" id="hudGold">17</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main screen -->
+    <main id="screen" class="screen battlepass-screen">
+      
+      <!-- VIP Banner -->
+      <div class="bp-vip-banner">
+        <div class="bp-vip-text">
+          <span class="bp-vip-highlight">VIP-доступ</span> на сезон дає у <b>3 рази</b> більше нагород!
+        </div>
+        <button class="bp-vip-btn">
+          Купити за <span class="bp-vip-price">💎 1250</span>
+        </button>
+      </div>
+
+      <!-- Progress -->
+      <div class="bp-progress">
+        <span class="bp-progress-text">Зібрано алмазів (йде 1 круг сезону з 4)</span>
+        <span class="bp-progress-value">💎 6</span>
+      </div>
+
+      <!-- Column Headers -->
+      <div class="bp-headers">
+        <div class="bp-header bp-header--free">Нагороди для всіх магів</div>
+        <div class="bp-header bp-header--vip">Нагороди в VIP-доступі</div>
+      </div>
+
+      <!-- Rewards Track -->
+      <div class="bp-track">
+        
+        <!-- Level 50 -->
+        <div class="bp-level">
+          <div class="bp-reward bp-reward--free">
+            <div class="bp-reward-icons">
+              <span class="bp-reward-icon">⭐</span>
+              <span class="bp-reward-bonus">+100%</span>
+            </div>
+            <div class="bp-reward-icons">
+              <img class="bp-reward-icon-img" src="../../assets/icons/coin-silver.svg" alt="Срібло">
+              <span class="bp-reward-bonus">+100%</span>
+            </div>
+          </div>
+          <div class="bp-milestone">
+            <div class="bp-milestone-line"></div>
+            <div class="bp-milestone-badge">50</div>
+            <div class="bp-milestone-line"></div>
+          </div>
+          <div class="bp-reward bp-reward--vip">
+            <div class="bp-reward-item">
+              <span class="bp-reward-icon">📜</span>
+              <span class="bp-reward-name">Знижка в крамниці</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 100 -->
+        <div class="bp-level">
+          <div class="bp-reward bp-reward--free"></div>
+          <div class="bp-milestone">
+            <div class="bp-milestone-line"></div>
+            <div class="bp-milestone-badge">100</div>
+            <div class="bp-milestone-line"></div>
+          </div>
+          <div class="bp-reward bp-reward--vip">
+            <div class="bp-reward-item">
+              <span class="bp-reward-icon">🗡️</span>
+              <span class="bp-reward-name">Незвичайне Спис мага</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 150 -->
+        <div class="bp-level">
+          <div class="bp-reward bp-reward--free">
+            <div class="bp-reward-resource">
+              <img class="bp-reward-icon-img" src="../../assets/icons/coin-silver.svg" alt="Срібло">
+              <span class="bp-reward-amount">3.5М</span>
+            </div>  
+
+          </div>
+          <div class="bp-milestone">
+            <div class="bp-milestone-line"></div>
+            <div class="bp-milestone-badge">150</div>
+            <div class="bp-milestone-line"></div>
+          </div>
+          <div class="bp-reward bp-reward--vip">
+            <div class="bp-reward-item">
+              <span class="bp-reward-icon">🧪</span>
+              <span class="bp-reward-name">Настойка старого Дуайта</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 200 -->
+        <div class="bp-level">
+          <div class="bp-reward bp-reward--free"></div>
+          <div class="bp-milestone">
+            <div class="bp-milestone-line"></div>
+            <div class="bp-milestone-badge">200</div>
+            <div class="bp-milestone-line"></div>
+          </div>
+          <div class="bp-reward bp-reward--vip">
+            <div class="bp-reward-item">
+              <span class="bp-reward-icon">📋</span>
+              <span class="bp-reward-name">Дозвіл на полювання</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 250 -->
+        <div class="bp-level">
+          <div class="bp-reward bp-reward--free">
+            <div class="bp-reward-resource">
+              <img class="bp-reward-icon-img" src="../../assets/icons/coin-gold.svg" alt="Золото">
+              <span class="bp-reward-amount">350</span>
+            </div>
+          </div>
+          <div class="bp-milestone">
+            <div class="bp-milestone-line"></div>
+            <div class="bp-milestone-badge">250</div>
+            <div class="bp-milestone-line"></div>
+          </div>
+          <div class="bp-reward bp-reward--vip">
+            <div class="bp-reward-item">
+              <span class="bp-reward-icon">✨</span>
+              <span class="bp-reward-name">Чудесне зцілення</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 300 -->
+        <div class="bp-level">
+          <div class="bp-reward bp-reward--free"></div>
+          <div class="bp-milestone">
+            <div class="bp-milestone-line"></div>
+            <div class="bp-milestone-badge">300</div>
+            <div class="bp-milestone-line"></div>
+          </div>
+          <div class="bp-reward bp-reward--vip">
+            <div class="bp-reward-item">
+              <span class="bp-reward-icon">🍀</span>
+              <span class="bp-reward-name">Спадок дядька Сема</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 400 -->
+        <div class="bp-level">
+          <div class="bp-reward bp-reward--free"></div>
+          <div class="bp-milestone">
+            <div class="bp-milestone-line"></div>
+            <div class="bp-milestone-badge bp-milestone-badge--gold">400</div>
+            <div class="bp-milestone-line"></div>
+          </div>
+          <div class="bp-reward bp-reward--vip"></div>
+        </div>
+
+      </div>
+
+      <!-- Exchange Section -->
+      <div class="bp-exchange">
+        <div class="bp-exchange-item">
+          <span class="bp-exchange-icon">⬇️</span>
+          <span class="bp-exchange-count">12</span>
+          <div class="bp-exchange-card"></div>
+        </div>
+        <span class="bp-exchange-arrow">➡️</span>
+        <div class="bp-exchange-item">
+          <span class="bp-exchange-icon">⬇️</span>
+          <span class="bp-exchange-count">12</span>
+          <div class="bp-exchange-card"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Button -->
+      <div class="bp-action">
+        <button class="bp-action-btn" onclick="location.href='my-items.html'">
+          Ваші магічні предмети
+        </button>
+        <a href="magic-items.html" class="bp-action-link">ⓘ Опис магічних предметів</a>
+      </div>
+
+      <!-- Season Timer -->
+      <div class="bp-timer">
+        Кінець сезону і скид через <span class="bp-timer-value">24 д 22 г</span>
+      </div>
+
+    </main>
+
+    <!-- Toasts / Modals host -->
+    <div id="toastHost" class="toast-host" aria-live="polite"></div>
+    <div id="modalHost" class="modal-host" aria-hidden="true"></div>
+
+    <!-- Bottom navigation (3 buttons) -->
+    <nav id="botbar" class="botbar botbar--3" aria-label="Bottom navigation">
+      <button class="botbar__btn" data-route="home" type="button">
+        <span class="botbar__icon" aria-hidden="true"></span>
+        <span class="botbar__text">Головна</span>
+      </button>
+
+      <button class="botbar__btn" data-route="profile" type="button">
+        <span class="botbar__icon" aria-hidden="true"></span>
+        <span class="botbar__text">Профіль</span>
+      </button>
+
+      <button class="botbar__btn" data-route="guild" type="button">
+        <span class="botbar__icon" aria-hidden="true"></span>
+        <span class="botbar__text">Гільдія</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <script type="module" defer src="../../src/ui-shell.js"></script>
+</body>
+</html>
+
+
+
