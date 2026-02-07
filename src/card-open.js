@@ -760,12 +760,28 @@
         e.preventDefault();
         e.stopPropagation();
         absorbOne();
+        // Update task progress for absorbing cards
+        try {
+          const PROGRESS_KEY = "cardastika:tasks:progress";
+          let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
+          const cur = Math.max(0, Number(progress["t_absorb_cards_10"] ?? 0));
+          progress["t_absorb_cards_10"] = cur + 1;
+          localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+        } catch { /* ignore */ }
       });
 
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         absorbOne();
+        // Update task progress for absorbing cards
+        try {
+          const PROGRESS_KEY = "cardastika:tasks:progress";
+          let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
+          const cur = Math.max(0, Number(progress["t_absorb_cards_10"] ?? 0));
+          progress["t_absorb_cards_10"] = cur + 1;
+          localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+        } catch { /* ignore */ }
       });
 
       item.appendChild(btn);
@@ -1143,6 +1159,15 @@
             } catch {
               // ignore
             }
+
+            // Update task progress for upgrading battle cards
+            try {
+              const PROGRESS_KEY = "cardastika:tasks:progress";
+              let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
+              const cur = Math.max(0, Number(progress["t_upgrade_battle_1"] ?? 0));
+              progress["t_upgrade_battle_1"] = cur + 1;
+              localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+            } catch { /* ignore */ }
 
             showToast(`Рівень підвищено до ${u2.nextLevel}.`);
             try { document.dispatchEvent(new Event("card-open:rerender")); } catch { /* ignore */ }

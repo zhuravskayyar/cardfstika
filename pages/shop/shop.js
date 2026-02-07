@@ -196,6 +196,22 @@ function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Helper to update task progress in localStorage
+function updateTaskProgress(taskId, increment = 1) {
+  const PROGRESS_KEY = "cardastika:tasks:progress";
+  let progress = {};
+  try {
+    progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
+  } catch {
+    progress = {};
+  }
+  const cur = Math.max(0, Number(progress[taskId] ?? 0));
+  progress[taskId] = cur + increment;
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch { /* ignore */ }
+}
+
 function normalizeElement(raw) {
   const s = String(raw || "").toLowerCase().trim();
   if (["fire", "water", "air", "earth"].includes(s)) return s;
@@ -851,6 +867,8 @@ async function main() {
       const card = buildCard({ cover, tier, levelsData, offer });
 
       const equipRes = applyPurchaseToAccount({ spend: spendRes.spend, card });
+      // Update task progress for buying cards
+      updateTaskProgress("t_buy_cards_5", 1);
       try { emitCampaignEvent("shop_purchase", { count: 1 }); } catch { /* ignore */ }
 
       const q = String(tier.quality || offer.base.quality || "common");
@@ -970,6 +988,8 @@ async function main() {
       }
 
       showToast(`Отримано: ${cards.length} карт • ${bundle.title}`);
+      // Update task progress for buying cards (multiple from bundle)
+      updateTaskProgress("t_buy_cards_5", cards.length);
       try { emitCampaignEvent("shop_purchase", { count: cards.length }); } catch { /* ignore */ }
 
       try {
@@ -1007,6 +1027,8 @@ async function main() {
       }
 
       showToast(`Получено: ${bundle.count} карт • ${bundle.title}`);
+      // Update task progress for buying cards (random bundle)
+      updateTaskProgress("t_buy_cards_5", bundle.count || 1);
       try { emitCampaignEvent("shop_purchase", { count: bundle.count || 1 }); } catch { /* ignore */ }
 
       try {
