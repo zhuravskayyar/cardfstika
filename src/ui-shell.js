@@ -200,14 +200,61 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     const FIRST_KEY = "cardastika:firstRunShown";
     if (!localStorage.getItem(FIRST_KEY)) {
+      // Встановлюємо прапорець щоб модальне вітання не показувалось повторно
       localStorage.setItem(FIRST_KEY, "1");
-      const ROUTES = getRoutes();
-      const cur = guessRouteFromPath();
-      if (cur !== "home" && ROUTES?.home) {
-        // Перенаправляємо на домашню сторінку при першому візиті
-        location.href = ROUTES.home;
-        return;
-      }
+
+      // Показуємо модальне вітання поверх поточної сторінки
+      const inPages = location.pathname.toLowerCase().includes("/pages/");
+      const authPath = inPages ? "../auth/auth.html" : "./pages/auth/auth.html";
+
+      const overlay = document.createElement("div");
+      overlay.className = "welcome-modal";
+      overlay.style.position = "fixed";
+      overlay.style.inset = "0";
+      overlay.style.background = "rgba(0,0,0,0.6)";
+      overlay.style.display = "flex";
+      overlay.style.alignItems = "center";
+      overlay.style.justifyContent = "center";
+      overlay.style.zIndex = "9999";
+
+      const card = document.createElement("div");
+      card.className = "welcome-card";
+      card.style.width = "520px";
+      card.style.maxWidth = "92%";
+      card.style.background = "linear-gradient(#1b120d, #0f0a08)";
+      card.style.border = "1px solid rgba(255,215,130,0.12)";
+      card.style.padding = "28px";
+      card.style.borderRadius = "12px";
+      card.style.boxShadow = "0 6px 30px rgba(0,0,0,0.6)";
+      card.style.color = "#f3e7d2";
+      card.style.textAlign = "center";
+
+      card.innerHTML = `
+        <h1 style="font-family: 'EB Garamond', serif; font-size:48px; margin:0 0 8px;">Cardastika</h1>
+        <p style="margin:0 0 20px; font-size:16px; color:#eedfbf">Збери унікальну колоду магічних карт і кинь виклик стихіям.</p>
+        <div style="display:flex; gap:12px; justify-content:center; margin-top:18px">
+          <button id="welcomeStartBtn" style="background:#8f6f39; color:white; border:none; padding:12px 24px; border-radius:8px; font-size:16px;">Почати гру</button>
+          <button id="welcomeLoginBtn" style="background:#1e5e85; color:white; border:none; padding:12px 24px; border-radius:8px; font-size:16px">Вхід для гравців</button>
+        </div>
+      `;
+
+      overlay.appendChild(card);
+      document.body.appendChild(overlay);
+
+      const removeModal = () => {
+        try { overlay.remove(); } catch(e) {}
+      };
+
+      document.getElementById("welcomeStartBtn")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        removeModal();
+      });
+
+      document.getElementById("welcomeLoginBtn")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        // Перехід на сторінку авторизації
+        location.href = authPath;
+      });
     }
   } catch (e) {
     // ignore
