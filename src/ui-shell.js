@@ -20,32 +20,21 @@ function ensureMojibakeRepairer() {
 ensureMojibakeRepairer();
 
 function getRoutes() {
-  // Р’РёР·РЅР°С‡Р°С”РјРѕ, С‡Рё РјРё РЅР° РіРѕР»РѕРІРЅС–Р№ СЃС‚РѕСЂС–РЅС†С– С‡Рё РІ РїС–РґРїР°РїС†С– pages
-  const isInPages = location.pathname.toLowerCase().includes("/pages/");
-  
-  if (isInPages) {
-    // РЇРєС‰Рѕ РІ pages/[name]/, С€Р»СЏС…Рё РІС–РґРЅРѕСЃРЅС– РґРѕ РїРѕС‚РѕС‡РЅРѕС— РїР°РїРєРё
-    return {
-      home:        "../../index.html",
-      deck:        "../deck/deck.html",
-      guild:       "../guild/guild.html",
-      shop:        "../shop/shop.html",
-      collections: "../collections/collections.html",
-      duel:        "../duel/duel.html",
-      profile:     "../profile/profile.html",
-    };
-  } else {
-    // РЇРєС‰Рѕ РЅР° РіРѕР»РѕРІРЅС–Р№ СЃС‚РѕСЂС–РЅС†С–, С€Р»СЏС…Рё С–РЅС€С–
-    return {
-      home:        "./index.html",
-      deck:        "./pages/deck/deck.html",
-      guild:       "./pages/guild/guild.html",
-      shop:        "./pages/shop/shop.html",
-      collections: "./pages/collections/collections.html",
-      duel:        "./pages/duel/duel.html",
-      profile:     "./pages/profile/profile.html",
-    };
-  }
+  // Compute BASE_PATH for deployments (GitHub Pages uses username.github.io/<repo>/)
+  const path = location.pathname.replaceAll("\\", "/");
+  const parts = path.split("/").filter(Boolean);
+  const isGithub = location.hostname.endsWith("github.io");
+  const BASE_PATH = isGithub && parts.length ? `/${parts[0]}/` : "/";
+
+  return {
+    home:        `${BASE_PATH}index.html`,
+    deck:        `${BASE_PATH}pages/deck/deck.html`,
+    guild:       `${BASE_PATH}pages/guild/guild.html`,
+    shop:        `${BASE_PATH}pages/shop/shop.html`,
+    collections: `${BASE_PATH}pages/collections/collections.html`,
+    duel:        `${BASE_PATH}pages/duel/duel.html`,
+    profile:     `${BASE_PATH}pages/profile/profile.html`,
+  };
 }
 
 function setActiveRoute(route) {
@@ -80,8 +69,11 @@ function go(route) {
 }
 
 function assetPrefix() {
-  const inPages = location.pathname.toLowerCase().includes("/pages/");
-  return inPages ? "../../" : "./";
+  const path = location.pathname.replaceAll("\\", "/");
+  const parts = path.split("/").filter(Boolean);
+  const isGithub = location.hostname.endsWith("github.io");
+  const BASE_PATH = isGithub && parts.length ? `/${parts[0]}/` : "/";
+  return BASE_PATH;
 }
 
 function fmtK(n) {
