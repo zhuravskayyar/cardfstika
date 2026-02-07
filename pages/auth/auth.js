@@ -251,6 +251,12 @@ startNewBtn?.addEventListener("click", async () => {
     localStorage.setItem("cardastika:silver", String(STARTER_SILVER));
     localStorage.setItem("cardastika:gems", String(STARTER_SILVER));
     
+    // Reset campaign progress to 0
+    localStorage.setItem("cardastika:campaignProgress", JSON.stringify({}));
+    // Reset task progress and claimed tasks
+    localStorage.removeItem("cardastika:tasks:progress");
+    localStorage.removeItem("cardastika:tasks:claimed");
+    
     // Set a session flag to show main screen
     localStorage.setItem("cardastika:player", "new-game");
     // Set active player name so profile shows it
