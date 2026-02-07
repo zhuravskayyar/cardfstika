@@ -144,6 +144,15 @@ function redirectAfterAuth() {
     window.location.href = "../profile/profile.html";
     return;
   }
+  // If the page contains an embedded `#app` (HUD), show it instead of navigating.
+  const app = document.getElementById("app");
+  if (app) {
+    app.hidden = false;
+    // hide auth UI
+    showAuth(false);
+    // If ui-shell initialized earlier it will wire up UI; otherwise load fallback.
+    return;
+  }
   window.location.href = "../../index.html";
 }
 
@@ -257,7 +266,8 @@ startNewBtn?.addEventListener("click", async () => {
     console.warn("[auth] failed to prepare starter state for new game", err);
   }
 
-  window.location.href = "../../index.html";
+  // If HUD is embedded, reveal it instead of navigating away.
+  redirectAfterAuth();
 });
 
 startLoginBtn?.addEventListener("click", () => {
