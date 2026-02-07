@@ -117,9 +117,8 @@ function todayKeyLocal(d = new Date()) {
 
 function activeAccKeySuffix() {
   const acc = window.AccountSystem?.getActive?.() || null;
-  const name = String(acc?.name || localStorage.getItem("cardastika:auth:active") || localStorage.getItem("activeAccount") || localStorage.getItem("cardastika:player") || "").trim();
-  // Always return a suffix to allow play without saved account
-  return name ? `:${name}` : `:guest`;
+  const name = String(acc?.name || localStorage.getItem("cardastika:auth:active") || localStorage.getItem("activeAccount") || "").trim();
+  return name ? `:${name}` : "";
 }
 
 function hasTitle(titleId) {
