@@ -7,6 +7,9 @@
   const URL_PARAMS = new URLSearchParams(location.search || "");
   const BATTLE_MODE = String(URL_PARAMS.get("mode") || "").toLowerCase();
   const IS_BOSS_BATTLE = BATTLE_MODE === "boss";
+  const IS_TUTORIAL_DUEL =
+    URL_PARAMS.get("tutorial") === "1" &&
+    localStorage.getItem("cardastika:tutorialStage") === "duel";
   const BOSS_ACT_ID = URL_PARAMS.get("act") ? String(URL_PARAMS.get("act")) : null;
 
   // ==========================================
@@ -94,6 +97,128 @@
     const badge = rootEl.querySelector(".battle-player__rarity");
     if (!badge) return;
     badge.innerHTML = `<img class="battle-player__league-icon" src="../../assets/icons/leagues/${escHtml(id)}.svg" alt="">`;
+  }
+
+  const ELEM_LABEL_UA = {
+    fire: "Вогонь",
+    water: "Вода",
+    air: "Повітря",
+    earth: "Земля",
+  };
+
+  const ELEM_ICON = {
+    fire: "../../assets/icons/fire.svg",
+    water: "../../assets/icons/water.svg",
+    air: "../../assets/icons/air.svg",
+    earth: "../../assets/icons/earth.svg",
+  };
+
+  function ensureTutorialBattleStyle() {
+    if (!IS_TUTORIAL_DUEL) return;
+    if (document.getElementById("tutorialBattleStyle")) return;
+    const style = document.createElement("style");
+    style.id = "tutorialBattleStyle";
+    style.textContent = `
+      .tutorial-battle-hint {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(212, 177, 89, 0.45);
+        background: rgba(17, 25, 36, 0.85);
+        color: #e7edf7;
+        font-size: 13px;
+      }
+      .tutorial-battle-hint__icon {
+        width: 14px;
+        height: 14px;
+        vertical-align: -2px;
+        margin: 0 3px 0 4px;
+      }
+      .tutorial-recommended-card {
+        position: relative;
+        box-shadow: 0 0 0 2px rgba(255, 222, 116, 0.9), 0 0 18px rgba(255, 222, 116, 0.55);
+      }
+      .tutorial-recommended-card::before {
+        content: "↓";
+        position: absolute;
+        top: -28px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #ffd978;
+        font-size: 24px;
+        font-weight: 700;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
+        animation: tutorialArrowBounce 0.9s ease-in-out infinite;
+        pointer-events: none;
+      }
+      @keyframes tutorialArrowBounce {
+        0%, 100% { transform: translateX(-50%) translateY(0); }
+        50% { transform: translateX(-50%) translateY(3px); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function ensureTutorialHintHost() {
+    if (!IS_TUTORIAL_DUEL) return null;
+    let hint = document.getElementById("tutorialBattleHint");
+    if (hint) return hint;
+    const instr = document.querySelector(".battle-instructions");
+    if (!instr) return null;
+    hint = document.createElement("div");
+    hint.id = "tutorialBattleHint";
+    hint.className = "tutorial-battle-hint";
+    instr.insertAdjacentElement("afterend", hint);
+    return hint;
+  }
+
+  function bestTutorialMove() {
+    if (!CURRENT_DUEL) return null;
+    let best = null;
+    for (let i = 0; i < (CURRENT_DUEL?.player?.hand?.length || 0); i++) {
+      const pCard = CURRENT_DUEL.player.hand[i];
+      const eCard = CURRENT_DUEL.enemy.hand[i];
+      if (!pCard || !eCard) continue;
+      const mult = (window.MULT?.[pCard.element]?.[eCard.element]) ?? 1;
+      const dmg = Math.round((Number(pCard.power) || 0) * mult);
+      if (!best || mult > best.mult || (mult === best.mult && dmg > best.dmg)) {
+        best = { i, mult, dmg, pCard, eCard };
+      }
+    }
+    return best;
+  }
+
+  function updateTutorialGuidance() {
+    if (!IS_TUTORIAL_DUEL) return;
+    ensureTutorialBattleStyle();
+    const hint = ensureTutorialHintHost();
+    els.playerBtns.forEach((btn) => btn.classList.remove("tutorial-recommended-card"));
+
+    if (!CURRENT_DUEL || CURRENT_DUEL.finished) {
+      if (hint) hint.textContent = "Навчальна дуель завершена.";
+      return;
+    }
+
+    const move = bestTutorialMove();
+    if (!move) return;
+    const targetBtn = els.playerBtns[move.i];
+    if (targetBtn) targetBtn.classList.add("tutorial-recommended-card");
+
+    const stateText = move.mult > 1
+      ? `<b style="color:#71e49a;">вигідний</b>`
+      : move.mult < 1
+        ? `<b style="color:#ff8e8e;">невигідний</b>`
+        : `<b style="color:#d8e0ee;">нейтральний</b>`;
+
+    const pName = ELEM_LABEL_UA[String(move.pCard?.element || "")] || "Стихія";
+    const eName = ELEM_LABEL_UA[String(move.eCard?.element || "")] || "Стихія";
+    const pIcon = ELEM_ICON[String(move.pCard?.element || "")] || "";
+    const eIcon = ELEM_ICON[String(move.eCard?.element || "")] || "";
+    if (hint) {
+      hint.innerHTML = `⬇ Хід у слот ${move.i + 1}: ${stateText} (${move.mult.toFixed(1)}x). ` +
+        `<img class="tutorial-battle-hint__icon" src="${pIcon}" alt="">${pName} проти ` +
+        `<img class="tutorial-battle-hint__icon" src="${eIcon}" alt="">${eName}.`;
+    }
   }
 
   // ==========================================
@@ -685,6 +810,7 @@
       els.playerBtns[selectedPlayerCard].style.outline = "3px solid yellow";
     }
     updatePlayerMultiplierPreview();
+    updateTutorialGuidance();
     updateLog();
   }
 
@@ -758,7 +884,9 @@
 
     const resultUrl = IS_BOSS_BATTLE
       ? `./result.html?mode=boss${BOSS_ACT_ID ? `&act=${encodeURIComponent(BOSS_ACT_ID)}` : ""}`
-      : "./result.html";
+      : IS_TUTORIAL_DUEL
+        ? "./result.html?tutorial=1"
+        : "./result.html";
     setTimeout(() => {
       location.href = resultUrl;
     }, 450);
@@ -841,6 +969,9 @@
 
       const instrEl = document.querySelector(".battle-instructions");
       if (instrEl && IS_BOSS_BATTLE) instrEl.textContent = "Виберіть, чим ходити.";
+      if (instrEl && IS_TUTORIAL_DUEL) {
+        instrEl.textContent = "Слідуй підказці: стрілка показує рекомендовану карту для ходу.";
+      }
     } catch (e) {
       // ignore
     }

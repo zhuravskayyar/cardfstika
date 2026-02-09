@@ -34,6 +34,21 @@
     }, 2200);
   }
 
+  const TUTORIAL_STAGE_KEY = "cardastika:tutorialStage";
+  const TUTORIAL_REWARD_UID_KEY = "cardastika:tutorial:rewardUid";
+
+  function inTutorialUpgradeFlow() {
+    return qs("tutorial") === "1" && localStorage.getItem(TUTORIAL_STAGE_KEY) === "upgrade";
+  }
+
+  function isTutorialRewardCard(card) {
+    const rewardUid = String(localStorage.getItem(TUTORIAL_REWARD_UID_KEY) || "").trim();
+    const uid = String(card?.uid || "").trim();
+    const id = String(card?.id || "").trim();
+    if (rewardUid && uid && rewardUid === uid) return true;
+    return id === "tutorial_reward_dragon";
+  }
+
   let _activeModalClose = null;
   function closeModal() {
     if (typeof _activeModalClose === "function") {
@@ -576,6 +591,13 @@
   }
 
   function listAbsorbCandidates({ st, target }) {
+    const normEl = (raw) => {
+      const s = String(raw || "").toLowerCase().trim();
+      if (s === "wind") return "air";
+      if (s === "fire" || s === "water" || s === "air" || s === "earth") return s;
+      return "";
+    };
+
     const deckUidSet = new Set((st?.deck || []).map((c) => String(c?.uid || "")).filter(Boolean));
     const deckFpCounts = new Map();
     const fp = (c) => `${String(c?.id || "")}|${String(c?.element || "")}|${Math.max(1, Math.round(asNum(c?.level, 1)))}|${Math.round(asNum(c?.power ?? c?.basePower, 0))}`;
@@ -584,7 +606,8 @@
       deckFpCounts.set(k, (deckFpCounts.get(k) || 0) + 1);
     }
     const targetUid = String(target?.uid || "").trim();
-    const targetEl = String(target?.element || "");
+    const targetEl = normEl(target?.element);
+    if (!targetEl) return [];
 
     const candidates = (st?.inventory || [])
       .filter((c) => c && typeof c === "object")
@@ -600,7 +623,7 @@
         }
         return true;
       })
-      .filter((c) => String(c.element || "") === targetEl)
+      .filter((c) => normEl(c?.element) === targetEl)
       .filter((c) => !c.protected)
       .filter((c) => String(c.uid || "").trim() !== targetUid);
 
@@ -1079,6 +1102,13 @@
 
         renderUpgradeUI({ st, cardRef, upgrade, candidates });
         renderWeakCards({ levelsData, st, cardRef, upgrade, candidates });
+        const actionBtn = document.getElementById("cardActionBtn");
+        if (actionBtn) {
+          actionBtn.classList.toggle(
+            "is-tutorial-target",
+            !!(target && inTutorialUpgradeFlow() && isTutorialRewardCard(target)),
+          );
+        }
 
         try {
           const hudGold = document.getElementById("hudGold");
@@ -1175,6 +1205,17 @@
               progress["t_upgrade_battle_1"] = cur + 1;
               localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
             } catch { /* ignore */ }
+
+            const tutorialUpgradeDone = inTutorialUpgradeFlow() && isTutorialRewardCard(target2);
+            if (tutorialUpgradeDone) {
+              localStorage.setItem(TUTORIAL_STAGE_KEY, "buy");
+              showToast("Карту прокачано. Переходимо в крамницю.");
+              try { document.dispatchEvent(new Event("card-open:rerender")); } catch { /* ignore */ }
+              setTimeout(() => {
+                window.location.href = "../shop/shop.html?tutorial=1";
+              }, 650);
+              return;
+            }
 
             showToast(`Рівень підвищено до ${u2.nextLevel}.`);
             try { document.dispatchEvent(new Event("card-open:rerender")); } catch { /* ignore */ }

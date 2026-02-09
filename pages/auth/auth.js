@@ -9,7 +9,7 @@ const STARTER_DECK_SIZE = 9;
 const STARTER_CARD_POWER = 12;
 const STARTER_SILVER = 1500;
 const STARTER_DIAMONDS = 0;
-const STARTER_GOLD = 0;
+const STARTER_GOLD = 20;
 
 const RARITY_TO_NUM = {
   common: 1,
@@ -240,34 +240,27 @@ async function ensureGameAccount(name) {
 
 startNewBtn?.addEventListener("click", async () => {
   markOnboardingSeen();
-  
-  // Start as a new local player: force starter deck/resources.
+
+  // Force fresh flow: tutorial auth -> tutorial.
+  // Do not auto-enter main screen.
   try {
-    const starterDeck = await createStarterDeck();
-    localStorage.setItem("cardastika:deck", JSON.stringify(starterDeck));
-    localStorage.setItem("cardastika:inventory", JSON.stringify(starterDeck));
-    localStorage.setItem("cardastika:gold", String(STARTER_GOLD));
-    localStorage.setItem("cardastika:diamonds", String(STARTER_DIAMONDS));
-    localStorage.setItem("cardastika:silver", String(STARTER_SILVER));
-    localStorage.setItem("cardastika:gems", String(STARTER_SILVER));
-    
-    // Reset campaign progress to 0
-    localStorage.setItem("cardastika:campaignProgress", JSON.stringify({}));
-    // Reset task progress and claimed tasks
+    localStorage.removeItem(ACTIVE_KEY);
+    localStorage.removeItem(REMEMBER_KEY);
+    localStorage.removeItem("activeAccount");
+    localStorage.removeItem("cardastika:player");
+
+    localStorage.removeItem("cardastika:tutorialCompleted");
+    localStorage.removeItem("cardastika:tutorialStage");
+    localStorage.removeItem("cardastika:tutorial:rewardUid");
+    localStorage.removeItem("cardastika:tutorial:tasksWelcomeShown");
+
     localStorage.removeItem("cardastika:tasks:progress");
     localStorage.removeItem("cardastika:tasks:claimed");
-    
-    // Set a session flag to show main screen
-    localStorage.setItem("cardastika:player", "new-game");
-    // Set active player name so profile shows it
-    localStorage.setItem(ACTIVE_KEY, "new-game");
-    localStorage.setItem(REMEMBER_KEY, "1");
   } catch (err) {
-    console.warn("[auth] failed to prepare starter state for new game", err);
+    console.warn("[auth] failed to reset tutorial state for new game", err);
   }
 
-  // Redirect to main game page
-  window.location.href = "../../index.html";
+  window.location.href = "../tutorial/tutorial-auth.html";
 });
 
 startLoginBtn?.addEventListener("click", () => {

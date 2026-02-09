@@ -4,6 +4,11 @@ import "../../src/account.js";
 import "../../src/progression-system.js";
 import { getDuelLeagueIconPath } from "../../src/core/leagues.js";
 
+const URL_PARAMS = new URLSearchParams(location.search || "");
+const IS_TUTORIAL_DUEL =
+  URL_PARAMS.get("tutorial") === "1" &&
+  localStorage.getItem("cardastika:tutorialStage") === "duel";
+
 let CARDS = [];
 let currentEnemy = null;
 let playerProfile = {
@@ -124,6 +129,9 @@ function normalizeCardForHP(raw, fallbackId) {
 // ==========================================
 
 function generateEnemyPower(playerPower) {
+  if (IS_TUTORIAL_DUEL) {
+    return Math.max(30, Math.round(playerPower * 0.7));
+  }
   const min = Math.max(10, Math.round(playerPower * 0.8));
   const max = Math.round(playerPower * 1.4);
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -216,10 +224,14 @@ function handleAttack() {
     }
 
   // Переходимо до бою
-  location.href = "./battle.html";
+  location.href = IS_TUTORIAL_DUEL ? "./battle.html?tutorial=1" : "./battle.html";
 }
 
 function handleExplore() {
+  if (IS_TUTORIAL_DUEL) {
+    showToast("У навчальній дуелі доступний поточний суперник.");
+    return;
+  }
   generateNewEnemy();
   renderEnemy();
   showToast(` Знайдено: ${currentEnemy.name}!`);
@@ -323,6 +335,19 @@ function updateUI() {
   }
 
   renderEnemy();
+
+  if (IS_TUTORIAL_DUEL) {
+    const bannerEl = document.getElementById("banner");
+    const exploreBtn = document.getElementById("exploreBtn");
+    const progressEl = document.getElementById("duelProgress");
+
+    if (bannerEl) bannerEl.textContent = "Навчальна дуель";
+    if (exploreBtn) {
+      exploreBtn.textContent = "Навчання";
+      exploreBtn.classList.add("is-disabled");
+    }
+    if (progressEl) progressEl.textContent = "Навчальний бій";
+  }
 }
 
 function setupEventListeners() {

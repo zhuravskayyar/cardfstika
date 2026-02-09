@@ -259,18 +259,16 @@ async function render() {
     .filter(Boolean)
     .map((c) => decorateCard({ ...c, inDeck: deckUids.has(String(c.uid)) }, CARD_BELONGS_TO.player));
 
-  const weakTotalsByElement = { fire: 0, water: 0, air: 0, earth: 0 };
+  let weakTotalElements = 0;
   for (const c of invCards) {
     if (!c || c.inDeck) continue;
     if (c.protected) continue;
-    const el = normalizeElement(c.element);
-    if (!el) continue;
     const lvl = Math.max(1, Math.round(asNum(c.level, 1)));
     const row = levelsData.byLevel.get(lvl) || null;
     const elems = Number.isFinite(Number(c.elementsStored))
       ? Math.max(0, Number(c.elementsStored))
       : asNum(row?.elements, 0);
-    weakTotalsByElement[el] += elems;
+    weakTotalElements += elems;
   }
 
   for (let i = 0; i < buttons.length; i++) {
@@ -324,7 +322,7 @@ async function render() {
     const canReach = canReachNextLevelByAbsorb({
       levelsData,
       card,
-      candidatesTotalElements: weakTotalsByElement[normalizeElement(card.element)] || 0,
+      candidatesTotalElements: weakTotalElements,
     });
     btn.classList.toggle("is-upgradable", !!canReach);
 

@@ -70,11 +70,13 @@ export async function ensureCardCatalogLoaded() {
           const id = safeString(c.id).trim();
           if (!id) continue;
           const prev = merged.get(id) || { id };
+          const artFile = safeString(c.artFile ?? prev.artFile ?? "");
           merged.set(id, {
             id,
             title: safeString(c.title ?? c.name ?? prev.title ?? c.id, id),
             element: normalizeElement(c.element) || prev.element || "earth",
             rarity: safeString(c.rarity ?? prev.rarity ?? ""),
+            artFile,
           });
         }
         loadedCatalog = true;
@@ -118,6 +120,11 @@ export function decorateCard(rawCard, belongsTo = "") {
   const existingEl = normalizeElement(card.element);
   if (mEl) card.element = mEl;
   else if (existingEl) card.element = existingEl;
+
+  // Generate art path from artFile if not already set
+  if (!card.art && meta?.artFile) {
+    card.art = `${rootPrefix()}assets/cards/arts/${meta.artFile}`;
+  }
 
   if (belongsTo) card.belongsTo = belongsTo;
 

@@ -29,6 +29,10 @@
 
     const isInPages = location.pathname.includes("/pages/");
     const url = isInPages ? "../card/card.html" : "./pages/card/card.html";
-    window.location.href = url;
+    const inTutorialUpgrade =
+      new URLSearchParams(location.search).get("tutorial") === "1" ||
+      localStorage.getItem("cardastika:tutorialStage") === "upgrade";
+    const nextUrl = inTutorialUpgrade ? `${url}?tutorial=1` : url;
+    window.location.href = nextUrl;
   });
 })();

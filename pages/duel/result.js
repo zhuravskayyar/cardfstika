@@ -200,6 +200,91 @@ const RESULT_META = {
   draw: { title: "НІЧИЯ", className: "is-draw" },
 };
 
+const TUTORIAL_STAGE_KEY = "cardastika:tutorialStage";
+const TUTORIAL_REWARD_UID_KEY = "cardastika:tutorial:rewardUid";
+const TUTORIAL_REWARD_ID = "tutorial_reward_dragon";
+
+function newUid() {
+  if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
+  return `tutorial_reward_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function asNum(v, d = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+}
+
+function removeRewardFromList(list) {
+  if (!Array.isArray(list)) return [];
+  return list.filter((card) => String(card?.id || "") !== TUTORIAL_REWARD_ID);
+}
+
+function pushRewardToDeck(deck, reward) {
+  const clean = removeRewardFromList(Array.isArray(deck) ? deck : []);
+  if (clean.length < 9) {
+    clean.push({ ...reward, inDeck: true });
+    return clean.slice(0, 9);
+  }
+
+  let weakIdx = 0;
+  let weakPower = asNum(clean[0]?.power ?? clean[0]?.basePower, 0);
+  for (let i = 1; i < clean.length; i++) {
+    const p = asNum(clean[i]?.power ?? clean[i]?.basePower, 0);
+    if (p < weakPower) {
+      weakPower = p;
+      weakIdx = i;
+    }
+  }
+  clean[weakIdx] = { ...reward, inDeck: true };
+  return clean.slice(0, 9);
+}
+
+function grantTutorialRewardCard() {
+  const uid = newUid();
+  const reward = {
+    uid,
+    id: TUTORIAL_REWARD_ID,
+    name: "Дракон Навчання",
+    title: "Дракон Навчання",
+    element: "fire",
+    rarity: 5,
+    level: 5,
+    basePower: 70,
+    power: 70,
+    bonusFixed: 0,
+    elementsStored: 0.32,
+    protected: false,
+    inDeck: true,
+    artFile: "fire_001.webp",
+    bio: "Навчальний дракон, який отримуєш після першої перемоги в дуелі. Його сила зростає при прокачці і відкриває наступний крок навчання.",
+    source: "tutorial",
+  };
+
+  if (window.AccountSystem?.updateActive && window.AccountSystem?.getActive?.()) {
+    window.AccountSystem.updateActive((acc) => {
+      const inv = removeRewardFromList(Array.isArray(acc.inventory) ? acc.inventory : []);
+      inv.push({ ...reward, inDeck: true });
+      acc.inventory = inv;
+      acc.deck = pushRewardToDeck(acc.deck, reward);
+      return null;
+    });
+  } else {
+    let deck = [];
+    let inventory = [];
+    try { deck = JSON.parse(localStorage.getItem("cardastika:deck") || "[]") || []; } catch { deck = []; }
+    try { inventory = JSON.parse(localStorage.getItem("cardastika:inventory") || "[]") || []; } catch { inventory = []; }
+
+    inventory = removeRewardFromList(inventory);
+    inventory.push({ ...reward, inDeck: true });
+    deck = pushRewardToDeck(deck, reward);
+
+    localStorage.setItem("cardastika:inventory", JSON.stringify(inventory));
+    localStorage.setItem("cardastika:deck", JSON.stringify(deck));
+  }
+
+  localStorage.setItem(TUTORIAL_REWARD_UID_KEY, uid);
+}
+
 function startBossBattle({ actId, bossName, bossPower } = {}) {
   const act = actId ? String(actId) : "";
   if (!act) return;
@@ -225,6 +310,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(location.search || "");
   const modeParam = String(urlParams.get("mode") || "").toLowerCase();
   const isBossBattle = modeParam === "boss";
+  const isTutorialFlow =
+    urlParams.get("tutorial") === "1" &&
+    localStorage.getItem(TUTORIAL_STAGE_KEY) === "duel";
   const actParam = urlParams.get("act") ? String(urlParams.get("act")) : null;
 
   const againBtn = document.getElementById("againBtn");
@@ -280,6 +368,24 @@ document.addEventListener("DOMContentLoaded", () => {
         againBtn.addEventListener("click", () => {
           if (!bossActId) return;
           startBossBattle({ actId: bossActId, bossName, bossPower });
+        });
+      }
+    } else if (isTutorialFlow) {
+      if (res === "win") {
+        try {
+          grantTutorialRewardCard();
+        } catch (e) {
+          console.warn("[tutorial] failed to grant reward card", e);
+        }
+        localStorage.setItem(TUTORIAL_STAGE_KEY, "upgrade");
+        againBtn.textContent = "До прокачки";
+        againBtn.addEventListener("click", () => {
+          location.href = "../deck/deck.html?tutorial=1";
+        });
+      } else {
+        againBtn.textContent = "Спробувати ще раз";
+        againBtn.addEventListener("click", () => {
+          location.href = "./duel.html?tutorial=1";
         });
       }
     } else {

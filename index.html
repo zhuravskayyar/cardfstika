@@ -158,21 +158,42 @@
   </div>
 
   <script type="module">
-    // ============================================================
-    // Session Check: Redirect to auth if no session
-    // ============================================================
-    
-    const userSession = localStorage.getItem('cardastika:player');
-    
-    // If no session, redirect to auth page
-    if (!userSession) {
-      window.location.href = 'pages/auth/auth.html';
+    const TUTORIAL_COMPLETED_KEY = "cardastika:tutorialCompleted";
+    const TUTORIAL_STAGE_KEY = "cardastika:tutorialStage";
+    const AUTH_ACTIVE_KEY = "cardastika:auth:active";
+
+    const tutorialDone = localStorage.getItem(TUTORIAL_COMPLETED_KEY) === "1";
+    const tutorialStage = localStorage.getItem(TUTORIAL_STAGE_KEY);
+    const activeAuth = localStorage.getItem(AUTH_ACTIVE_KEY);
+
+    if (!tutorialDone) {
+      if (!activeAuth) {
+        window.location.href = "pages/tutorial/tutorial-auth.html";
+      } else if (tutorialStage === "duel") {
+        window.location.href = "pages/duel/duel.html?tutorial=1";
+      } else if (tutorialStage === "upgrade") {
+        window.location.href = "pages/deck/deck.html?tutorial=1";
+      } else if (tutorialStage === "buy") {
+        window.location.href = "pages/shop/shop.html?tutorial=1";
+      } else if (tutorialStage === "tasks") {
+        window.location.href = "pages/tasks/tasks.html?tutorial=complete";
+      } else {
+        window.location.href = "pages/tutorial/tutorial.html";
+      }
     } else {
-      // Session exists, show main screen
-      const mainScreen = document.getElementById('mainScreen');
-      const botbar = document.getElementById('botbar');
-      if (mainScreen) mainScreen.style.display = 'block';
-      if (botbar) botbar.style.display = 'grid';
+      if (!localStorage.getItem("cardastika:player") && activeAuth) {
+        localStorage.setItem("cardastika:player", activeAuth);
+      }
+
+      const userSession = localStorage.getItem("cardastika:player");
+      if (!userSession) {
+        window.location.href = "pages/auth/auth.html";
+      } else {
+        const mainScreen = document.getElementById("mainScreen");
+        const botbar = document.getElementById("botbar");
+        if (mainScreen) mainScreen.style.display = "block";
+        if (botbar) botbar.style.display = "grid";
+      }
     }
   </script>
   <script type="module" defer src="src/ui-shell.js"></script>

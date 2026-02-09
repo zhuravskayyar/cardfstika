@@ -131,6 +131,11 @@ function isProfileRegistered(name) {
   return !!users[n];
 }
 
+function hasAnyRegisteredProfile() {
+  const users = loadAuthUsers();
+  return Object.keys(users || {}).length > 0;
+}
+
 function validAuthName(name) {
   const n = String(name || "").trim();
   if (n.length < 3 || n.length > 24) return false;

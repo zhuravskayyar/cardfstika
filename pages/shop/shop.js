@@ -11,6 +11,8 @@ const STORAGE = {
   oddsVersion: "cardastika:shop:oddsVersion",
 };
 const SHOP_ODDS_VERSION = "2026-02-07-v2";
+const TUTORIAL_STAGE_KEY = "cardastika:tutorialStage";
+const TUTORIAL_COMPLETED_KEY = "cardastika:tutorialCompleted";
 
 const PAY_CURRENCIES = {
   gold: "gold",
@@ -183,6 +185,18 @@ function showToast(message) {
   el.textContent = message;
   host.appendChild(el);
   setTimeout(() => el.remove(), 3000);
+}
+
+function isTutorialBuyFlow() {
+  const inTutorialQuery = new URLSearchParams(location.search).get("tutorial") === "1";
+  return inTutorialQuery && localStorage.getItem(TUTORIAL_STAGE_KEY) === "buy";
+}
+
+function finishTutorialAndGoTasks() {
+  localStorage.setItem(TUTORIAL_COMPLETED_KEY, "1");
+  localStorage.setItem(TUTORIAL_STAGE_KEY, "tasks");
+  localStorage.removeItem("cardastika:tutorial:rewardUid");
+  location.href = "../tasks/tasks.html?tutorial=complete";
 }
 
 function randomInt(min, max) {
@@ -886,6 +900,11 @@ async function main() {
         // ignore
       }
 
+      if (isTutorialBuyFlow()) {
+        finishTutorialAndGoTasks();
+        return;
+      }
+
       const baseQ = String(offer.base.quality || "common");
       const gotQ = String(tier.quality || baseQ);
       const upgraded = qualityRank(gotQ) > qualityRank(baseQ);
@@ -1010,6 +1029,10 @@ async function main() {
         // ignore
       }
       writeReadyBundlesState({ purchased: idx + 1, nextAt: now + 24 * 60 * 60 * 1000 });
+      if (isTutorialBuyFlow()) {
+        finishTutorialAndGoTasks();
+        return;
+      }
       location.href = "./shop-result.html";
       return;
     } else if (bundle.kind === "random") {
@@ -1049,6 +1072,10 @@ async function main() {
         // ignore
       }
       writeReadyBundlesState({ purchased: idx + 1, nextAt: now + 24 * 60 * 60 * 1000 });
+      if (isTutorialBuyFlow()) {
+        finishTutorialAndGoTasks();
+        return;
+      }
       location.href = "./shop-result.html";
       return;
     }

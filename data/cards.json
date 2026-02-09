@@ -2876,6 +2876,19 @@
       "artFile": "earth_062.webp"
     },
     {
+      "id": "tutorial_reward_dragon",
+      "title": "Дракон Навчання",
+      "element": "fire",
+      "basePower": 70,
+      "rarity": "legendary",
+      "collections": [
+        "Туторіал"
+      ],
+      "bio": "Навчальний дракон, який отримуєш після першої перемоги в дуелі. Його сила зростає при прокачці і відкриває наступний крок навчання.",
+      "artNum": 1,
+      "artFile": "firet_001.webp"
+    },
+    {
       "id": "source_fire",
       "title": "Джерело вогню",
       "element": "fire",
