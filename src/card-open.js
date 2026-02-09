@@ -278,6 +278,12 @@
   let collectionsRichCache = null;
   let cardBioMapCache = null;
   let titleBioMapCache = null;
+  const LEGACY_CARD_ID_ALIASES = {
+    elem_01: "elem_flame_spark",
+    elem_02: "elem_tide_drop",
+    elem_03: "elem_gale_wisp",
+    elem_04: "elem_stone_seed",
+  };
 
   function escapeXml(s) {
     return String(s)
@@ -423,7 +429,8 @@
 
     const art = $("cardArt");
     if (art) {
-      const url = String(card?.art || "").trim() || buildPlaceholderArt(card?.element, card?.title);
+      const artByFile = card?.artFile ? getPath(`assets/cards/arts/${String(card.artFile).trim()}`) : "";
+      const url = String(card?.art || "").trim() || artByFile || buildPlaceholderArt(card?.element, card?.title);
       art.style.backgroundImage = url ? `url('${url}')` : "";
     }
 
@@ -476,6 +483,42 @@
   function cardUid(card) {
     const u = String(card?.uid || "").trim();
     return u || "";
+  }
+
+  function mergeCardForView(baseCard, storedCard) {
+    const merged = { ...(baseCard || {}), ...(storedCard || {}) };
+
+    // Stored state may contain empty art fields. Keep resolved visual/meta fields from base card.
+    if (!String(merged.art || "").trim()) merged.art = String(baseCard?.art || "").trim();
+    if (!String(merged.artFile || "").trim()) merged.artFile = String(baseCard?.artFile || "").trim();
+    if (!String(merged.bio || "").trim()) merged.bio = String(baseCard?.bio || "").trim();
+    if (!String(merged.title || "").trim()) merged.title = String(baseCard?.title || "").trim();
+
+    return merged;
+  }
+
+  function isPlaceholderArtUrl(url) {
+    const s = String(url || "").trim().toLowerCase();
+    return s.startsWith("data:image/svg+xml");
+  }
+
+  function normalizeArtUrl(rawUrl) {
+    const raw = String(rawUrl || "").trim();
+    if (!raw) return "";
+    if (/^(data:|https?:\/\/|\/)/i.test(raw)) return raw;
+    if (raw.startsWith("../../") || raw.startsWith("../")) return raw;
+    if (raw.startsWith("./assets/")) return getPath(raw.slice(2));
+    if (raw.startsWith("assets/")) return getPath(raw);
+    return raw;
+  }
+
+  function findMetaByIdWithAlias(id) {
+    if (!id || !cardsJsonCache) return null;
+    const direct = cardsJsonCache.get(String(id));
+    if (direct) return direct;
+    const alias = LEGACY_CARD_ID_ALIASES[String(id)] || "";
+    if (!alias) return null;
+    return cardsJsonCache.get(alias) || null;
   }
 
   function migrateCardsInPlace(levelsData, list) {
@@ -723,8 +766,13 @@
 
       const artEl = btn.querySelector(".ref-card__art");
       if (artEl) {
-        const url = String(c.art || "").trim();
-        if (url) artEl.style.backgroundImage = `url('${url}')`;
+        const byFile = c?.artFile ? getPath(`assets/cards/arts/${String(c.artFile).trim()}`) : "";
+        const metaById = findMetaByIdWithAlias(c?.id);
+        const byMetaFile = metaById?.artFile ? getPath(`assets/cards/arts/${String(metaById.artFile).trim()}`) : "";
+        const fromCard = normalizeArtUrl(c.art);
+        const realCardArt = fromCard && !isPlaceholderArtUrl(fromCard) ? fromCard : "";
+        const url = byMetaFile || byFile || realCardArt || buildPlaceholderArt(c?.element, c?.title);
+        artEl.style.backgroundImage = `url('${url}')`;
       }
 
       const absorb = document.createElement("button");
@@ -930,8 +978,11 @@
   }
 
   let cardsJsonCache = null;
-  async function loadCardsJsonMetaById(id) {
-    if (!id) return null;
+  let cardsJsonByTitleElementCache = null;
+  async function loadCardsJsonMetaById(id, title = "", element = "") {
+    const hasId = !!id;
+    const hasTitle = !!String(title || "").trim();
+    if (!hasId && !hasTitle) return null;
     if (!cardsJsonCache) {
       const url = getPath("data/cards.json");
       const r = await fetch(url, { cache: "no-store" });
@@ -939,8 +990,37 @@
       const json = await r.json();
       const cards = Array.isArray(json?.cards) ? json.cards : [];
       cardsJsonCache = new Map(cards.filter(Boolean).map((c) => [String(c.id), c]));
+      const byTitleEl = new Map();
+      for (const c of cards.filter(Boolean)) {
+        const t = String(c?.title || c?.name || "").toLowerCase().replace(/\s+/g, " ").trim();
+        const e = String(c?.element || "").toLowerCase().trim();
+        if (!t) continue;
+        const key = `${t}|${e || "*"}`;
+        if (!byTitleEl.has(key)) byTitleEl.set(key, c);
+      }
+      cardsJsonByTitleElementCache = byTitleEl;
     }
-    return cardsJsonCache.get(String(id)) || null;
+
+    if (hasId) {
+      const direct = cardsJsonCache.get(String(id));
+      if (direct) return direct;
+      const alias = LEGACY_CARD_ID_ALIASES[String(id)] || "";
+      if (alias) {
+        const byAlias = cardsJsonCache.get(alias);
+        if (byAlias) return byAlias;
+      }
+    }
+
+    if (hasTitle && cardsJsonByTitleElementCache) {
+      const t = String(title || "").toLowerCase().replace(/\s+/g, " ").trim();
+      const e = String(element || "").toLowerCase().trim();
+      const exact = cardsJsonByTitleElementCache.get(`${t}|${e || "*"}`);
+      if (exact) return exact;
+      const anyEl = cardsJsonByTitleElementCache.get(`${t}|*`);
+      if (anyEl) return anyEl;
+    }
+
+    return null;
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -956,17 +1036,16 @@
     // Even if card came from sessionStorage (shop/deck), always prefer the canonical meta from data/cards.json.
     if (card && typeof card === "object" && card.id) {
       try {
-        const meta = await loadCardsJsonMetaById(card.id);
+        const meta = await loadCardsJsonMetaById(card.id, card.title || card.name || "", card.element || "");
         if (meta?.title) card.title = String(meta.title);
         if (meta?.element) card.element = String(meta.element);
         if (meta?.rarity && !card.rarity) card.rarity = normalizeRarityClass(meta.rarity);
-        // Support both 'art' (full URL) and 'artFile' (filename only)
-        if (!card.art) {
-          if (meta?.art) {
-            card.art = String(meta.art);
-          } else if (meta?.artFile) {
-            card.art = getPath(`assets/cards/arts/${meta.artFile}`);
-          }
+        // Canonical art from catalog has priority.
+        if (meta?.artFile) {
+          card.artFile = String(meta.artFile);
+          card.art = getPath(`assets/cards/arts/${meta.artFile}`);
+        } else if (meta?.art && !card.art) {
+          card.art = String(meta.art);
         }
         if (meta?.bio && !card.bio) card.bio = String(meta.bio);
       } catch (error) {
@@ -1083,7 +1162,7 @@
       let cardRef = findCardRef(st, card);
       if (cardRef?.card) {
         // Prefer the canonical stored card object (has uid/elementsStored, etc).
-        card = { ...card, ...cardRef.card };
+        card = mergeCardForView(card, cardRef.card);
         applyCard(card);
       }
 
@@ -1093,7 +1172,7 @@
 
         const target = cardRef?.card || null;
         if (target) {
-          card = { ...card, ...target };
+          card = mergeCardForView(card, target);
           applyCard(card);
         }
 

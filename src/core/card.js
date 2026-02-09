@@ -18,6 +18,28 @@ function safeString(v, fallback = "") {
   return String(v);
 }
 
+function normTitle(x) {
+  return safeString(x, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isSvgPlaceholderArt(x) {
+  return safeString(x, "").trim().toLowerCase().startsWith("data:image/svg+xml");
+}
+
+function normalizeArtUrl(raw) {
+  const s = safeString(raw, "").trim();
+  if (!s) return "";
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(s)) return s;
+  if (s.startsWith("../../") || s.startsWith("../")) return s;
+  if (s.startsWith("./assets/")) return `${rootPrefix()}${s.slice(2)}`;
+  if (s.startsWith("assets/")) return `${rootPrefix()}${s}`;
+  if (/^[^/\\]+\.(webp|png|jpe?g|gif|svg)$/i.test(s)) return `${rootPrefix()}assets/cards/arts/${s}`;
+  return s;
+}
+
 export function normalizeElement(x) {
   const s = safeString(x, "").toLowerCase().trim();
   if (["fire", "water", "air", "earth"].includes(s)) return s;
@@ -27,6 +49,14 @@ export function normalizeElement(x) {
 
 let loadPromise = null;
 let metaById = new Map();
+let metaByTitleElement = new Map();
+let metaByTitle = new Map();
+const LEGACY_CARD_ID_ALIASES = {
+  elem_01: "elem_flame_spark",
+  elem_02: "elem_tide_drop",
+  elem_03: "elem_gale_wisp",
+  elem_04: "elem_stone_seed",
+};
 
 export async function ensureCardCatalogLoaded() {
   if (loadPromise) return loadPromise;
@@ -89,7 +119,21 @@ export async function ensureCardCatalogLoaded() {
       console.warn("[CardCatalog] no unified/legacy card catalog loaded");
     }
 
+    const byTitleEl = new Map();
+    const byTitle = new Map();
+    for (const m of merged.values()) {
+      const t = normTitle(m?.title);
+      const e = normalizeElement(m?.element) || "";
+      if (t) {
+        const k = `${t}|${e || "*"}`;
+        if (!byTitleEl.has(k)) byTitleEl.set(k, m);
+        if (!byTitle.has(t)) byTitle.set(t, m);
+      }
+    }
+
     metaById = merged;
+    metaByTitleElement = byTitleEl;
+    metaByTitle = byTitle;
     return true;
   })();
 
@@ -99,7 +143,46 @@ export async function ensureCardCatalogLoaded() {
 export function getCardMetaById(cardId) {
   const id = safeString(cardId).trim();
   if (!id) return null;
-  return metaById.get(id) || null;
+  const direct = metaById.get(id);
+  if (direct) return direct;
+
+  const alias = LEGACY_CARD_ID_ALIASES[id];
+  if (!alias) return null;
+  return metaById.get(alias) || null;
+}
+
+function getCardMetaByTitleAndElement(title, element = "") {
+  const t = normTitle(title);
+  if (!t) return null;
+  const el = normalizeElement(element) || "";
+  if (el) {
+    const exact = metaByTitleElement.get(`${t}|${el}`);
+    if (exact) return exact;
+  }
+  return metaByTitle.get(t) || null;
+}
+
+export function resolveCardArt(rawCard) {
+  const card = rawCard && typeof rawCard === "object" ? rawCard : {};
+  const id = safeString(card.id ?? card.cardId ?? card.card_id ?? "").trim();
+  const title = safeString(card.title ?? card.name ?? "", "");
+  const element = normalizeElement(card.element);
+
+  const meta = getCardMetaById(id) || getCardMetaByTitleAndElement(title, element);
+
+  const ownArt = normalizeArtUrl(card.art ?? card.image ?? card.img ?? card.cover ?? "");
+  const ownArtFile = safeString(card.artFile ?? "", "").trim();
+  const metaArtFile = safeString(meta?.artFile ?? "", "").trim();
+  // Canonical catalog art has priority over persisted per-card art fields.
+  const artFile = metaArtFile || ownArtFile;
+  const byFile = artFile ? `${rootPrefix()}assets/cards/arts/${artFile}` : "";
+  const usableOwn = ownArt && !isSvgPlaceholderArt(ownArt) ? ownArt : "";
+
+  return {
+    art: byFile || usableOwn || "",
+    artFile,
+    meta,
+  };
 }
 
 // Decorate any card-like object with `{ id, title, element, belongsTo }` if possible.
@@ -108,23 +191,22 @@ export function decorateCard(rawCard, belongsTo = "") {
   const id = safeString(card.id ?? card.cardId ?? card.card_id ?? "").trim();
   if (id) card.id = id;
 
-  const meta = id ? getCardMetaById(id) : null;
+  const existingTitle = safeString(card.title ?? card.name ?? "").trim();
+  const existingEl = normalizeElement(card.element);
+  const meta = (id ? getCardMetaById(id) : null) || getCardMetaByTitleAndElement(existingTitle, existingEl);
 
   // If meta exists, always prefer it as the canonical title.
-  const existingTitle = safeString(card.title ?? card.name ?? "").trim();
   if (meta?.title) card.title = meta.title;
   else if (existingTitle) card.title = existingTitle;
 
   // If meta exists, prefer its element; otherwise keep existing normalized.
   const mEl = normalizeElement(meta?.element);
-  const existingEl = normalizeElement(card.element);
   if (mEl) card.element = mEl;
   else if (existingEl) card.element = existingEl;
 
-  // Generate art path from artFile if not already set
-  if (!card.art && meta?.artFile) {
-    card.art = `${rootPrefix()}assets/cards/arts/${meta.artFile}`;
-  }
+  const artResolved = resolveCardArt(card);
+  if (artResolved.art) card.art = artResolved.art;
+  if (artResolved.artFile) card.artFile = artResolved.artFile;
 
   if (belongsTo) card.belongsTo = belongsTo;
 

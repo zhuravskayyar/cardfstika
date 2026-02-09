@@ -227,6 +227,20 @@
 
   // Кеш artFile по id картки з cards.json
   let artFileCache = null;
+  let artFileByTitleElementCache = null;
+  const LEGACY_CARD_ID_ALIASES = {
+    elem_01: "elem_flame_spark",
+    elem_02: "elem_tide_drop",
+    elem_03: "elem_gale_wisp",
+    elem_04: "elem_stone_seed",
+  };
+
+  function titleElementKey(title, element) {
+    const t = String(title || "").toLowerCase().replace(/\s+/g, " ").trim();
+    const e = String(element || "").toLowerCase().trim();
+    if (!t) return "";
+    return `${t}|${e || "*"}`;
+  }
   
   async function loadArtFileCache() {
     if (artFileCache) return artFileCache;
@@ -236,15 +250,20 @@
       const json = await r.json();
       const cards = Array.isArray(json?.cards) ? json.cards : [];
       const cache = {};
+      const byTitleElement = {};
       for (const c of cards) {
         if (c && c.id && c.artFile) {
           cache[String(c.id)] = String(c.artFile);
+          const k = titleElementKey(c.title || c.name || c.id, c.element || "");
+          if (k && !byTitleElement[k]) byTitleElement[k] = String(c.artFile);
         }
       }
       artFileCache = cache;
+      artFileByTitleElementCache = byTitleElement;
       return cache;
     } catch {
       artFileCache = {};
+      artFileByTitleElementCache = {};
       return {};
     }
   }
@@ -268,7 +287,14 @@
     
     // Якщо немає artFile, шукаємо в кеші по id
     if (!artFile && raw.id && artFileCache) {
-      artFile = artFileCache[String(raw.id)] || null;
+      const id = String(raw.id);
+      const aliasId = LEGACY_CARD_ID_ALIASES[id] || "";
+      artFile = artFileCache[id] || (aliasId ? artFileCache[aliasId] : null) || null;
+    }
+
+    if (!artFile && artFileByTitleElementCache) {
+      const key = titleElementKey(raw.name || raw.title || raw.id || "", element);
+      if (key) artFile = artFileByTitleElementCache[key] || null;
     }
     
     if (!art && artFile) {
@@ -308,7 +334,14 @@
     
     // Якщо немає artFile, шукаємо в кеші по id
     if (!artFile && raw.id && artFileCache) {
-      artFile = artFileCache[String(raw.id)] || null;
+      const id = String(raw.id);
+      const aliasId = LEGACY_CARD_ID_ALIASES[id] || "";
+      artFile = artFileCache[id] || (aliasId ? artFileCache[aliasId] : null) || null;
+    }
+
+    if (!artFile && artFileByTitleElementCache) {
+      const key = titleElementKey(raw.name || raw.title || raw.id || "", element);
+      if (key) artFile = artFileByTitleElementCache[key] || null;
     }
     
     if (!art && artFile) {

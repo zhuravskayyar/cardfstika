@@ -2,6 +2,12 @@
 // Мінімальний “двигун” колекцій: прогрес + found/locked
 
 const EXTRA_FOUND_KEY = "cardastika:foundExtra";
+const ID_ALIASES = [
+  ["elem_01", "elem_flame_spark"],
+  ["elem_02", "elem_tide_drop"],
+  ["elem_03", "elem_gale_wisp"],
+  ["elem_04", "elem_stone_seed"],
+];
 
 function getPath(path) {
   const isInPages = location.pathname.toLowerCase().includes("/pages/");
@@ -81,6 +87,16 @@ export function buildFoundSet() {
     if (id) found.add(String(id));
   }
 
+  // Legacy/canonical id bridge for elementals collection.
+  for (const [legacyId, canonicalId] of ID_ALIASES) {
+    const hasLegacy = found.has(legacyId);
+    const hasCanonical = found.has(canonicalId);
+    if (hasLegacy || hasCanonical) {
+      found.add(legacyId);
+      found.add(canonicalId);
+    }
+  }
+
   return found;
 }
 
@@ -113,6 +129,15 @@ async function loadCollectionsFixed() {
   return json.filter(Boolean);
 }
 
+async function loadCollectionsRich() {
+  const url = getPath("data/collections.json");
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error(`collections.json fetch failed: ${r.status}`);
+  const json = await r.json();
+  const list = Array.isArray(json?.collections) ? json.collections : [];
+  return list.filter(Boolean);
+}
+
 function cardBelongsToCollection(card, collectionTitle) {
   if (!card || typeof card !== "object") return false;
   const cols = card.collections;
@@ -125,24 +150,43 @@ function cardBelongsToCollection(card, collectionTitle) {
 export async function loadCollectionsConfigSmart() {
   const fixed = await loadCollectionsFixed();
   let cards = [];
+  let rich = [];
   try {
     cards = await loadCardsJson();
   } catch (err) {
     console.warn("[collections] cards.json unavailable; using collections.fixed.json cardIds", err);
     cards = [];
   }
+  try {
+    rich = await loadCollectionsRich();
+  } catch (err) {
+    console.warn("[collections] collections.json unavailable; using fallback ids", err);
+    rich = [];
+  }
+
+  const richById = new Map(rich.map((c) => [String(c?.id || ""), c]));
 
   const out = [];
   for (const col of fixed) {
     const title = String(col?.title || "").trim();
-    const fromCards = title
-      ? cards.filter((c) => cardBelongsToCollection(c, title)).map((c) => String(c.id))
+    const richCol = richById.get(String(col?.id || "")) || null;
+    const richTitle = String(richCol?.title || "").trim();
+
+    const titlesToCheck = [title, richTitle].filter(Boolean);
+    const fromCards = titlesToCheck.length
+      ? cards
+          .filter((c) => titlesToCheck.some((t) => cardBelongsToCollection(c, t)))
+          .map((c) => String(c.id))
       : [];
+    const fromRich = Array.isArray(richCol?.cards) ? richCol.cards.map((c) => String(c?.id || "")).filter(Boolean) : [];
+    const fromFixed = Array.isArray(col?.cardIds) ? col.cardIds.map(String) : [];
+
+    const chosenIds = fromCards.length ? fromCards : (fromRich.length ? fromRich : fromFixed);
 
     out.push({
       id: String(col?.id || ""),
-      title: title || String(col?.id || ""),
-      cardIds: fromCards.length ? fromCards : (Array.isArray(col?.cardIds) ? col.cardIds.map(String) : []),
+      title: richTitle || title || String(col?.id || ""),
+      cardIds: chosenIds,
     });
   }
 

@@ -255,7 +255,7 @@ function grantTutorialRewardCard() {
     elementsStored: 0.32,
     protected: false,
     inDeck: true,
-    artFile: "fire_001.webp",
+    artFile: "firet_001.webp",
     bio: "Навчальний дракон, який отримуєш після першої перемоги в дуелі. Його сила зростає при прокачці і відкриває наступний крок навчання.",
     source: "tutorial",
   };
@@ -474,24 +474,33 @@ document.addEventListener("DOMContentLoaded", () => {
         .reverse()
         .map((e) => {
           const t = asInt(e?.turn);
-          const slot = asInt(e?.playerIdx) + 1;
+          // Prefer canonical meta artFile when available (fallback to previous hardcoded value)
+          let rewardArt = "firet_001.webp";
+          try {
+            const metaCard = (window.getCardById ? window.getCardById(TUTORIAL_REWARD_ID) : (window.CARDS_BY_ID && window.CARDS_BY_ID[TUTORIAL_REWARD_ID])) || null;
+            if (metaCard && metaCard.artFile) rewardArt = String(metaCard.artFile).trim();
+          } catch (e) {
+            // ignore and keep fallback
+          }
 
-          const pName = String(e?.pName || "Ваша карта");
-          const eName = String(e?.eName || "Карта ворога");
-
-          const pD = asInt(e?.pDmg);
-          const eD = asInt(e?.eDmg);
-
-          const pEl = String(e?.pEl || "");
-          const eEl = String(e?.eEl || "");
-
-          const pM = Number(e?.pMult);
-          const eM = Number(e?.eMult);
-          const pm = Number.isFinite(pM) ? pM : 1;
-          const em = Number.isFinite(eM) ? eM : 1;
-
-          const swords = swordIconForMult(pm, em);
-          const pBg = miniArtBg(e?.pArt, pEl);
+          const reward = {
+            uid,
+            id: TUTORIAL_REWARD_ID,
+            name: "Дракон Навчання",
+            title: "Дракон Навчання",
+            element: "fire",
+            rarity: 5,
+            level: 5,
+            basePower: 70,
+            power: 70,
+            bonusFixed: 0,
+            elementsStored: 0.32,
+            protected: false,
+            inDeck: true,
+            artFile: rewardArt,
+            bio: "Навчальний дракон, який отримуєш після першої перемоги в дуелі. Його сила зростає при прокачці і відкриває наступний крок навчання.",
+            source: "tutorial",
+          };
           const eBg = miniArtBg(e?.eArt, eEl);
 
           return `

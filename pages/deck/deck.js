@@ -1,6 +1,6 @@
 // pages/deck/deck.js — render deck from active account / storage
 import "../../src/account.js";
-import { CARD_BELONGS_TO, decorateCard, ensureCardCatalogLoaded } from "../../src/core/card.js";
+import { CARD_BELONGS_TO, decorateCard, ensureCardCatalogLoaded, resolveCardArt } from "../../src/core/card.js";
 
 function clamp(v, a, b) {
   return Math.max(a, Math.min(b, v));
@@ -93,6 +93,7 @@ function normalizeCard(raw, idx) {
 
   const rarity = normalizeRarity(raw.rarity ?? raw.quality ?? raw.rarityClass ?? 1);
   const art = raw.art || raw.image || raw.img || raw.cover || "";
+  const artFile = raw.artFile || "";
   const protectedFlag = !!(raw.protected ?? raw.isProtected ?? raw.locked ?? false);
 
   return {
@@ -108,6 +109,7 @@ function normalizeCard(raw, idx) {
     level,
     rarity,
     art: art ? String(art) : "",
+    artFile: artFile ? String(artFile) : "",
   };
 }
 
@@ -243,7 +245,13 @@ async function render() {
     .slice(0, 9)
     .map(normalizeCard)
     .filter(Boolean)
-    .map((c) => decorateCard({ ...c, inDeck: true }, CARD_BELONGS_TO.deck));
+    .map((c) => {
+      const card = decorateCard({ ...c, inDeck: true }, CARD_BELONGS_TO.deck);
+      const artResolved = resolveCardArt(card);
+      if (artResolved.art) card.art = artResolved.art;
+      if (artResolved.artFile && !card.artFile) card.artFile = artResolved.artFile;
+      return card;
+    });
 
   // Stronger cards first (descending power), then by level/rarity for stability.
   deck.sort((a, b) =>
@@ -257,7 +265,13 @@ async function render() {
   const invCards = rawInventory
     .map(normalizeCard)
     .filter(Boolean)
-    .map((c) => decorateCard({ ...c, inDeck: deckUids.has(String(c.uid)) }, CARD_BELONGS_TO.player));
+    .map((c) => {
+      const card = decorateCard({ ...c, inDeck: deckUids.has(String(c.uid)) }, CARD_BELONGS_TO.player);
+      const artResolved = resolveCardArt(card);
+      if (artResolved.art) card.art = artResolved.art;
+      if (artResolved.artFile && !card.artFile) card.artFile = artResolved.artFile;
+      return card;
+    });
 
   let weakTotalElements = 0;
   for (const c of invCards) {

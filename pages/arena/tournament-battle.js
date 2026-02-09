@@ -2,6 +2,7 @@
 
 import "../../src/account.js";
 import "../../src/progression-system.js";
+import { ensureCardCatalogLoaded, resolveCardArt } from "../../src/core/card.js";
 import { 
   applyBuffToDeck, 
   BUFF_TYPES, 
@@ -90,16 +91,27 @@ function normalizeCard(raw, fallbackId) {
   if (!element) return null;
 
   const rarity = Number(raw.rarity ?? raw.quality ?? 1);
+  const id = raw.id ?? raw.cardId ?? raw.card_id ?? null;
+  const name = String(raw.name || raw.title || element);
   // Support both 'art' (full URL) and 'artFile' (filename only)
   let art = raw.art || raw.image || raw.img || raw.cover || null;
-  if (!art && raw.artFile) {
+  const artResolved = resolveCardArt({
+    id,
+    title: name,
+    element,
+    art,
+    artFile: raw.artFile || "",
+  });
+  if (artResolved?.art) {
+    art = artResolved.art;
+  } else if (!art && raw.artFile) {
     art = `../../assets/cards/arts/${raw.artFile}`;
   }
 
   return {
     uid: String(raw.uid || raw.id || fallbackId || Date.now()),
-    id: raw.id ?? raw.cardId ?? raw.card_id ?? null,
-    name: String(raw.name || raw.title || element),
+    id,
+    name,
     element,
     power: Math.max(1, Math.round(power)),
     rarity: Number.isFinite(rarity) ? clamp(Math.round(rarity), 1, 6) : 1,
@@ -622,7 +634,13 @@ function bindUI() {
 // ІНІЦІАЛІЗАЦІЯ
 // ==========================================
 
-function init() {
+async function init() {
+  try {
+    await ensureCardCatalogLoaded();
+  } catch {
+    // ignore
+  }
+
   // Завантажуємо дані бою
   const battleRaw = safeGetItem(sessionStorage, "cardastika:tournamentBattle") || safeGetItem(localStorage, "cardastika:tournamentBattle");
   BATTLE_DATA = safeJSON(battleRaw) || {};

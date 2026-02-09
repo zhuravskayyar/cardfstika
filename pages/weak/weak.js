@@ -1,6 +1,6 @@
 // pages/weak/weak.js — list all cards not in the battle deck
 import "../../src/account.js";
-import { CARD_BELONGS_TO, decorateCard, ensureCardCatalogLoaded } from "../../src/core/card.js";
+import { CARD_BELONGS_TO, decorateCard, ensureCardCatalogLoaded, resolveCardArt } from "../../src/core/card.js";
 
 function asNum(v, d = 0) {
   const n = Number(v);
@@ -154,12 +154,11 @@ function normalizeCard(raw, idx) {
   const rarity = normalizeRarity(raw.rarity ?? raw.quality ?? raw.rarityClass ?? 1);
   // Support both 'art' (full URL) and 'artFile' (filename only)
   let art = String(raw.art || raw.image || raw.img || raw.cover || "").trim();
-  if (!art && raw.artFile) {
-    art = `../../assets/cards/arts/${raw.artFile}`;
-  }
+  const artFile = String(raw.artFile || "").trim();
+  if (!art && artFile) art = `../../assets/cards/arts/${artFile}`;
   const protectedFlag = !!(raw.protected ?? raw.isProtected ?? raw.locked ?? false);
   const isSource = !!(raw.isSource);
-  return { uid, id, title, element, power, level, rarity, protected: protectedFlag, art, isSource };
+  return { uid, id, title, element, power, level, rarity, protected: protectedFlag, art, artFile, isSource };
 }
 
 function cardFp(c) {
@@ -212,7 +211,13 @@ async function render() {
   const rawDeck = (st.deck || []).slice(0, 9).map(normalizeCard).filter(Boolean);
   const rawInv = (st.inventory || []).map(normalizeCard).filter(Boolean);
 
-  const deck = rawDeck.map((c) => decorateCard({ ...c, inDeck: true }, CARD_BELONGS_TO.deck));
+  const deck = rawDeck.map((c) => {
+    const card = decorateCard({ ...c, inDeck: true }, CARD_BELONGS_TO.deck);
+    const artResolved = resolveCardArt(card);
+    if (artResolved.art) card.art = artResolved.art;
+    if (artResolved.artFile && !card.artFile) card.artFile = artResolved.artFile;
+    return card;
+  });
   const deckUids = new Set(deck.map((c) => String(c?.uid || "")).filter(Boolean));
   const deckFpCounts = new Map();
   for (const c of rawDeck) {
@@ -232,7 +237,13 @@ async function render() {
       }
       return true;
     })
-    .map((c) => decorateCard({ ...c, inDeck: false }, CARD_BELONGS_TO.player));
+    .map((c) => {
+      const card = decorateCard({ ...c, inDeck: false }, CARD_BELONGS_TO.player);
+      const artResolved = resolveCardArt(card);
+      if (artResolved.art) card.art = artResolved.art;
+      if (artResolved.artFile && !card.artFile) card.artFile = artResolved.artFile;
+      return card;
+    });
 
   weak.sort((a, b) =>
     (Number(b?.level ?? 0) - Number(a?.level ?? 0)) ||

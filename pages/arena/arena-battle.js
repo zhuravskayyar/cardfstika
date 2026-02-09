@@ -10,6 +10,7 @@
  */
 
 import "../../src/account.js";
+import { ensureCardCatalogLoaded, resolveCardArt } from "../../src/core/card.js";
 import {
   getArenaLeagueByRating,
   updateArenaRating,
@@ -66,7 +67,12 @@ const arena = {
 };
 
 // ===================== BOOT =====================
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    await ensureCardCatalogLoaded();
+  } catch {
+    // ignore
+  }
   initArena();
   bindEvents();
   startNextCycle();
@@ -165,19 +171,31 @@ function normalizeCard(raw) {
 
   const rarityRaw = Number(raw.rarity ?? raw.quality ?? 1);
   const rarity = Number.isFinite(rarityRaw) ? Math.max(1, Math.min(6, Math.round(rarityRaw))) : 1;
+  const id = raw.id ?? raw.cardId ?? raw.card_id ?? null;
+  const name = String(raw.name || raw.title || element);
 
   // Support both 'art' (full URL) and 'artFile' (filename only)
   let art = raw.art || raw.image || raw.img || null;
-  if (!art && raw.artFile) {
+  const artResolved = resolveCardArt({
+    id,
+    title: name,
+    element,
+    art,
+    artFile: raw.artFile || "",
+  });
+  if (artResolved?.art) {
+    art = artResolved.art;
+  } else if (!art && raw.artFile) {
     art = `../../assets/cards/arts/${raw.artFile}`;
   }
 
   return {
     uid: String(raw.uid || raw.id || (Date.now() + Math.random())),
+    id,
     element,
     power: Math.max(1, Math.round(power)),
     rarity,
-    name: String(raw.name || raw.title || element),
+    name,
     art
   };
 }
