@@ -25,34 +25,8 @@ function escapeXml(s) {
 }
 
 function buildPlaceholderArt(element, title = "") {
-  const el = String(element || "").toLowerCase().trim();
-  const palette = {
-    fire: ["#ff6a4a", "#2a0c05"],
-    water: ["#4aa3ff", "#061122"],
-    earth: ["#4ee07a", "#05140b"],
-    air: ["#f6c35c", "#1a1406"],
-  }[el] || ["#8fb6ff", "#0b0b12"];
-
-  const safeTitle = String(title || "").slice(0, 36);
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="420" viewBox="0 0 420 420">` +
-    `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${palette[0]}"/><stop offset="1" stop-color="${palette[1]}"/></linearGradient></defs>` +
-    `<rect width="420" height="420" fill="url(#g)"/>` +
-    `<circle cx="315" cy="115" r="90" fill="rgba(255,255,255,0.11)"/>` +
-    `<circle cx="125" cy="305" r="120" fill="rgba(0,0,0,0.22)"/>` +
-    `<rect x="0" y="340" width="420" height="80" fill="rgba(0,0,0,0.3)"/>` +
-    `<text x="18" y="388" font-size="34" font-family="serif" fill="rgba(255,255,255,0.95)">${escapeXml(safeTitle)}</text>` +
-    `</svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-async function loadCardById(cardId) {
-  const targetId = String(cardId || "").trim();
-  if (!targetId) return null;
-
-  try {
-    const r = await fetch(getPath("data/cards.json"), { cache: "no-store" });
-    if (r.ok) {
+  // Placeholders are removed — return empty string so no placeholder image is used.
+  return "";
       const j = await r.json();
       const cards = Array.isArray(j?.cards) ? j.cards : [];
       const c = cards.find((x) => String(x?.id || "").trim() === targetId) || null;
@@ -239,7 +213,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   if (titleEl) titleEl.textContent = safeCard.title;
-  if (artEl) artEl.style.backgroundImage = `url('${buildPlaceholderArt(safeCard.element, safeCard.title)}')`;
+  if (artEl) { const bg = buildPlaceholderArt(safeCard.element, safeCard.title); if (bg) artEl.style.backgroundImage = `url('${bg}')`; }
 
   const bioByCard = String(safeCard.bio || "").trim();
   const bioById = String(bios?.[safeCard.id] || "").trim();

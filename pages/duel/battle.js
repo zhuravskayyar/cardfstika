@@ -241,6 +241,56 @@
     if (!t) return "";
     return `${t}|${e || "*"}`;
   }
+
+  function normalizeArtFileName(rawFile) {
+    const s = String(rawFile || "").trim();
+    if (!s) return "";
+    if (/^(data:|https?:\/\/|\/)/i.test(s)) return s;
+    if (s.startsWith("../../") || s.startsWith("../") || s.startsWith("./assets/") || s.startsWith("assets/")) return s;
+    if (!/\.[a-z0-9]+$/i.test(s)) return `${s}.webp`;
+    return s;
+  }
+
+  function artFileFromCardId(cardId) {
+    const id = String(cardId || "").trim();
+    if (!id) return "";
+    return normalizeArtFileName(id);
+  }
+
+  function artUrlFromFileLike(rawFile) {
+    const f = normalizeArtFileName(rawFile);
+    if (!f) return "";
+    if (/^(data:|https?:\/\/|\/)/i.test(f)) return f;
+    if (f.startsWith("../../") || f.startsWith("../")) return f;
+    if (f.startsWith("./assets/")) return `../../${f.slice(2)}`;
+    if (f.startsWith("assets/")) return `../../${f}`;
+    return `../../assets/cards/arts/${f}`;
+  }
+
+  function resolveCardArtUrl(raw, element) {
+    const item = raw && typeof raw === "object" ? raw : {};
+    const id = String(item.id ?? item.cardId ?? item.card_id ?? "").trim();
+    const aliasId = id ? (LEGACY_CARD_ID_ALIASES[id] || "") : "";
+
+    // ID-based art has priority project-wide.
+    let artFile = artFileFromCardId(aliasId || id);
+
+    if (!artFile && id && artFileCache) {
+      artFile = artFileCache[id] || (aliasId ? artFileCache[aliasId] : "") || "";
+    }
+
+    if (!artFile && artFileByTitleElementCache) {
+      const key = titleElementKey(item.name || item.title || item.id || "", element);
+      if (key) artFile = artFileByTitleElementCache[key] || "";
+    }
+
+    if (!artFile) artFile = normalizeArtFileName(item.artFile || "");
+
+    const byFile = artUrlFromFileLike(artFile);
+    const byArt = artUrlFromFileLike(item.art || item.image || item.img || item.cover || "");
+    const elementDefault = element ? `../../assets/cards/arts/${element}_001.webp` : "";
+    return byFile || byArt || elementDefault || "";
+  }
   
   async function loadArtFileCache() {
     if (artFileCache) return artFileCache;
@@ -252,11 +302,14 @@
       const cache = {};
       const byTitleElement = {};
       for (const c of cards) {
-        if (c && c.id && c.artFile) {
-          cache[String(c.id)] = String(c.artFile);
-          const k = titleElementKey(c.title || c.name || c.id, c.element || "");
-          if (k && !byTitleElement[k]) byTitleElement[k] = String(c.artFile);
-        }
+        if (!c || !c.id) continue;
+        const id = String(c.id).trim();
+        if (!id) continue;
+        const idArtFile = artFileFromCardId(id);
+        const legacyArtFile = normalizeArtFileName(c.artFile || "");
+        cache[id] = idArtFile || legacyArtFile || "";
+        const k = titleElementKey(c.title || c.name || c.id, c.element || "");
+        if (k && !byTitleElement[k]) byTitleElement[k] = idArtFile || legacyArtFile || "";
       }
       artFileCache = cache;
       artFileByTitleElementCache = byTitleElement;
@@ -281,25 +334,7 @@
     const rarityRaw = Number(raw.rarity ?? raw.quality ?? 1);
     const rarity = Number.isFinite(rarityRaw) ? clamp(Math.round(rarityRaw), 1, 6) : 1;
 
-    // Підтримка artFile (з cards.json) та art/image
-    let art = raw.art || raw.image || raw.img || raw.cover || null;
-    let artFile = raw.artFile || null;
-    
-    // Якщо немає artFile, шукаємо в кеші по id
-    if (!artFile && raw.id && artFileCache) {
-      const id = String(raw.id);
-      const aliasId = LEGACY_CARD_ID_ALIASES[id] || "";
-      artFile = artFileCache[id] || (aliasId ? artFileCache[aliasId] : null) || null;
-    }
-
-    if (!artFile && artFileByTitleElementCache) {
-      const key = titleElementKey(raw.name || raw.title || raw.id || "", element);
-      if (key) artFile = artFileByTitleElementCache[key] || null;
-    }
-    
-    if (!art && artFile) {
-      art = `../../assets/cards/arts/${artFile}`;
-    }
+    const art = resolveCardArtUrl(raw, element);
 
     return {
       uid: String(raw.uid || raw.id || fallbackId || Date.now()),
@@ -307,7 +342,7 @@
       element,
       power,
       rarity,
-      name: String(raw.name || raw.title || element),
+      name: String(raw.name || raw.title || raw.id || element),
       art: art ? String(art) : null
     };
   }
@@ -328,30 +363,12 @@
 
     const rarity = Number(raw.rarity ?? raw.quality ?? 1);
     
-    // Підтримка artFile (з cards.json) та art/image
-    let art = raw.art || raw.image || raw.img || raw.cover || null;
-    let artFile = raw.artFile || null;
-    
-    // Якщо немає artFile, шукаємо в кеші по id
-    if (!artFile && raw.id && artFileCache) {
-      const id = String(raw.id);
-      const aliasId = LEGACY_CARD_ID_ALIASES[id] || "";
-      artFile = artFileCache[id] || (aliasId ? artFileCache[aliasId] : null) || null;
-    }
-
-    if (!artFile && artFileByTitleElementCache) {
-      const key = titleElementKey(raw.name || raw.title || raw.id || "", element);
-      if (key) artFile = artFileByTitleElementCache[key] || null;
-    }
-    
-    if (!art && artFile) {
-      art = `../../assets/cards/arts/${artFile}`;
-    }
+    const art = resolveCardArtUrl(raw, element);
 
     return {
       uid: String(raw.uid || raw.id || fallbackId || Date.now()),
       id: raw.id ?? raw.cardId ?? raw.card_id ?? null,
-      name: String(raw.name || raw.title || element),
+      name: String(raw.name || raw.title || raw.id || element),
       element,
       power: Math.max(1, Math.round(power)),
       rarity: Number.isFinite(rarity) ? clamp(Math.round(rarity),1,6) : 1,

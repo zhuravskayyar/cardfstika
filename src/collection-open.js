@@ -1,5 +1,17 @@
 import "./account.js";
-import { buildFoundSet, computeCollectionProgress, loadCollectionsConfigSmart } from "./collections-core.js";
+import { buildFoundMatcher, loadCollectionsConfigSmart } from "./collections-core.js";
+import { fixMojibake } from "./core/mojibake.js";
+
+const LEGACY_CARD_ID_ALIASES = {
+  elem_01: "elem_flame_spark",
+  elem_02: "elem_tide_drop",
+  elem_03: "elem_gale_wisp",
+  elem_04: "elem_stone_seed",
+  battle_elem_01: "war_elem_flamebrand",
+  battle_elem_02: "war_elem_tidehammer",
+  battle_elem_03: "war_elem_stormclaw",
+  battle_elem_04: "war_elem_rockfist",
+};
 
 function getPath(path) {
   const isInPages = location.pathname.toLowerCase().includes("/pages/");
@@ -16,34 +28,8 @@ function escapeXml(s) {
 }
 
 function buildPlaceholderArt(element, title = "") {
-  const el = String(element || "").toLowerCase().trim();
-  const palette = {
-    fire: ["#ff6a4a", "#2a0c05"],
-    water: ["#4aa3ff", "#061122"],
-    earth: ["#4ee07a", "#05140b"],
-    air: ["#f6c35c", "#1a1406"],
-  }[el] || ["#8fb6ff", "#0b0b12"];
-
-  const safeTitle = String(title || "").slice(0, 40);
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">` +
-    `<defs>` +
-    `<linearGradient id="g" x1="0" y1="0" x2="0" y2="1">` +
-    `<stop offset="0" stop-color="${palette[0]}"/>` +
-    `<stop offset="1" stop-color="${palette[1]}"/>` +
-    `</linearGradient>` +
-    `</defs>` +
-    `<rect width="600" height="800" fill="url(#g)"/>` +
-    `<circle cx="470" cy="170" r="140" fill="rgba(255,255,255,0.10)"/>` +
-    `<circle cx="110" cy="640" r="180" fill="rgba(0,0,0,0.18)"/>` +
-    (safeTitle
-      ? `<text x="40" y="740" font-size="34" font-family="serif" fill="rgba(255,255,255,0.85)">${escapeXml(
-          safeTitle,
-        )}</text>`
-      : "") +
-    `</svg>`;
-
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  // Placeholders are removed — return empty string so no placeholder image is used.
+  return "";
 }
 
 function qs(name) {
@@ -102,19 +88,76 @@ function demoArtForElement(element) {
   return buildPlaceholderArt(element);
 }
 
+function normalizeArtUrl(raw) {
+  const s = String(raw || "").trim();
+  if (!s) return "";
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(s)) return s;
+  if (s.startsWith("../../") || s.startsWith("../")) return s;
+  if (s.startsWith("./assets/")) return getPath(s.slice(2));
+  if (s.startsWith("assets/")) return getPath(s);
+  return s;
+}
+
+function normalizeArtFileName(rawFile) {
+  const s = String(rawFile || "").trim();
+  if (!s) return "";
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(s)) return s;
+  if (s.startsWith("../../") || s.startsWith("../") || s.startsWith("./assets/") || s.startsWith("assets/")) return s;
+  if (!/\.[a-z0-9]+$/i.test(s)) return `${s}.webp`;
+  return s;
+}
+
+function artFileFromCardId(cardId) {
+  const id = String(cardId || "").trim();
+  if (!id) return "";
+  return normalizeArtFileName(id);
+}
+
+function artUrlFromFileLike(rawFile) {
+  const f = normalizeArtFileName(rawFile);
+  if (!f) return "";
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(f)) return f;
+  if (f.startsWith("../../") || f.startsWith("../") || f.startsWith("./assets/") || f.startsWith("assets/")) {
+    return normalizeArtUrl(f);
+  }
+  return getPath(`assets/cards/arts/${f}`);
+}
+
+function normTitle(x) {
+  return fixMojibake(String(x || "")).toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function resolveCardArtUrl(cardLike, metaLike = null) {
+  const card = cardLike && typeof cardLike === "object" ? cardLike : null;
+  const meta = metaLike && typeof metaLike === "object" ? metaLike : null;
+  if (!card && !meta) return "";
+
+  const id = String(meta?.id || card?.id || card?.cardId || card?.card_id || "").trim();
+  const byId = artUrlFromFileLike(artFileFromCardId(id));
+  const byMetaFile = artUrlFromFileLike(meta?.artFile || "");
+  const byCardFile = artUrlFromFileLike(card?.artFile || "");
+  const byCardArt = normalizeArtUrl(card?.art || card?.image || card?.img || card?.cover || "");
+  const byMetaArt = normalizeArtUrl(meta?.art || meta?.image || meta?.img || meta?.cover || "");
+
+  return byId || byMetaFile || byCardFile || byCardArt || byMetaArt || "";
+}
+
 function setImgWithFallback(img, primaryUrl, { element = "", title = "" } = {}) {
   if (!img) return;
-  const fallback = buildPlaceholderArt(element, title);
+  const fallback = buildPlaceholderArt(element, title) || "";
   img.onerror = () => {
     img.onerror = null;
-    img.src = fallback;
+    if (fallback) img.src = fallback;
+    else img.removeAttribute('src');
   };
 
   const url = String(primaryUrl || "").trim();
-  img.src = url || fallback;
+  if (url) img.src = url;
+  else if (fallback) img.src = fallback;
+  else img.removeAttribute('src');
 }
 
-function renderGrid(collectionId, cardIds, foundSet, cardMeta = []) {
+function renderGrid(collectionId, cardIds, isFoundAtIndex, cardMeta = []) {
   const grid = document.getElementById("collectionGrid");
   if (!grid) return;
 
@@ -123,7 +166,7 @@ function renderGrid(collectionId, cardIds, foundSet, cardMeta = []) {
   for (let i = 0; i < cardIds.length; i++) {
     const rawId = cardIds[i];
     const id = String(rawId);
-    const isFound = foundSet.has(id);
+    const isFound = typeof isFoundAtIndex === "function" ? !!isFoundAtIndex(i) : false;
     const meta = cardMeta[i] || null;
 
     const a = document.createElement("a");
@@ -182,17 +225,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const cardsByIdBase = new Map((cardsBase || []).filter(Boolean).map((c) => [String(c.id), c]));
   const cardsByIdJson = new Map((cardsJson || []).filter(Boolean).map((c) => [String(c.id), c]));
+  const cardsByTitleElementJson = new Map();
+  const addTitleElementKey = (titleRaw, elementRaw, card) => {
+    const t = normTitle(titleRaw || "");
+    const e = String(elementRaw || "").toLowerCase().trim();
+    if (!t) return;
+    const key = `${t}|${e || "*"}`;
+    if (!cardsByTitleElementJson.has(key)) cardsByTitleElementJson.set(key, card);
+  };
+  for (const c of (cardsJson || []).filter(Boolean)) {
+    addTitleElementKey(c?.title || c?.name || c?.id || "", c?.element || "", c);
+    // Extra key for un-fixed mojibake strings (defensive against mixed-encoding sources).
+    const rawTitle = String(c?.title || c?.name || c?.id || "").toLowerCase().replace(/\s+/g, " ").trim();
+    if (rawTitle) {
+      const e = String(c?.element || "").toLowerCase().trim();
+      const rawKey = `${rawTitle}|${e || "*"}`;
+      if (!cardsByTitleElementJson.has(rawKey)) cardsByTitleElementJson.set(rawKey, c);
+    }
+  }
 
-  const foundSet = buildFoundSet();
+  const foundMatcher = buildFoundMatcher();
   setTitle(fixed.title || fixed.id);
-
-  const prog = computeCollectionProgress(fixed, foundSet);
-  setText("collectionFound", prog.found);
-  setText("collectionTotal", prog.total);
 
   // Optional extra UI data (if present for this collection)
   const colExtra = openData?.collections?.[id] || null;
   const colRich = Array.isArray(collectionsRich) ? collectionsRich.find((c) => c && c.id === id) : null;
+  const extraCardsById = new Map(
+    (Array.isArray(colExtra?.cards) ? colExtra.cards : [])
+      .filter(Boolean)
+      .map((c) => [String(c.id || ""), c]),
+  );
 
   // Prefer rich dataset, fallback to collection-open-data, else keep static HTML defaults.
   const uiCol = colRich || colExtra;
@@ -217,46 +279,90 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const meta = (fixed.cardIds || []).map((cardId, idx) => {
-    const id = String(cardId);
+    const id = String(cardId || "");
+    const aliasId = LEGACY_CARD_ID_ALIASES[id] || "";
+    const richCard = colRich?.cards?.[idx] || null;
+    const richTitle = String(richCard?.title || richCard?.name || "").trim();
+    const richElement = String(richCard?.element || "").toLowerCase().trim();
 
-    // Prefer canonical meta from data/cards.json for title/element.
-    const j = cardsByIdJson.get(id);
+    // Prefer canonical meta from data/cards.json for title/element/art.
+    let j = cardsByIdJson.get(id) || (aliasId ? cardsByIdJson.get(aliasId) : null) || null;
+    if (!j && richTitle) {
+      const exact = cardsByTitleElementJson.get(`${normTitle(richTitle)}|${richElement || "*"}`);
+      const byAnyElement = cardsByTitleElementJson.get(`${normTitle(richTitle)}|*`);
+      j = exact || byAnyElement || null;
+    }
     if (j) {
       const title = j.title || j.name || j.id;
       const element = j.element || "";
+      const art = resolveCardArtUrl(j) || (element ? demoArtForElement(element) : "");
       return {
         title: title ? String(title) : "",
         element: element ? String(element) : "",
-        art: element ? demoArtForElement(element) : "",
+        art,
       };
     }
 
     // Fallback: rich collection card meta by index (if present).
-    const richCard = colRich?.cards?.[idx] || null;
     if (richCard) {
       const title = richCard.title || richCard.name || richCard.id || "";
       const element = richCard.element || "";
+      const extraCardById = extraCardsById.get(id) || (aliasId ? extraCardsById.get(aliasId) : null) || null;
+      const art = resolveCardArtUrl(richCard) || resolveCardArtUrl(extraCardById) || (element ? demoArtForElement(element) : "");
       return {
         title: title ? String(title) : "",
         element: element ? String(element) : "",
-        art: element ? demoArtForElement(element) : "",
+        art,
       };
     }
 
     // Legacy fallback: cards.base.json (may not contain ids for new cards).
-    const c = cardsByIdBase.get(id);
+    const c = cardsByIdBase.get(id) || (aliasId ? cardsByIdBase.get(aliasId) : null) || null;
     if (c) {
       const title = c.name || c.title || c.id;
       const element = c.element || "";
+      const art = resolveCardArtUrl(c) || (element ? demoArtForElement(element) : "");
       return {
         title: title ? String(title) : "",
         element: element ? String(element) : "",
-        art: element ? demoArtForElement(element) : "",
+        art,
+      };
+    }
+
+    const extraCardById = extraCardsById.get(id) || (aliasId ? extraCardsById.get(aliasId) : null) || null;
+    if (extraCardById) {
+      const title = extraCardById.title || extraCardById.name || extraCardById.id || "";
+      const element = extraCardById.element || "";
+      const art = resolveCardArtUrl(extraCardById) || (element ? demoArtForElement(element) : "");
+      return {
+        title: title ? String(title) : "",
+        element: element ? String(element) : "",
+        art,
       };
     }
 
     return null;
   });
 
-  renderGrid(id, fixed.cardIds || [], foundSet, meta);
+  const cardIds = fixed.cardIds || [];
+  const foundFlags = cardIds.map((cardId, idx) => {
+    const rawId = String(cardId || "");
+    if (foundMatcher.hasId(rawId)) return true;
+    const aliasId = LEGACY_CARD_ID_ALIASES[rawId] || "";
+    if (aliasId && foundMatcher.hasId(aliasId)) return true;
+
+    const richCard = colRich?.cards?.[idx] || null;
+    const extraCard = extraCardsById.get(rawId) || (aliasId ? extraCardsById.get(aliasId) : null) || null;
+    const m = meta[idx] || null;
+    return foundMatcher.hasCard({
+      id: rawId,
+      title: m?.title || richCard?.title || extraCard?.title || "",
+      element: m?.element || richCard?.element || extraCard?.element || "",
+    });
+  });
+
+  setText("collectionFound", foundFlags.filter(Boolean).length);
+  setText("collectionTotal", cardIds.length);
+
+  renderGrid(id, cardIds, (idx) => !!foundFlags[idx], meta);
 });

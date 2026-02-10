@@ -28,3 +28,15 @@ textarea {
   outline-offset: 2px;
 }
 
+/* Fixed card art preview size used across many pages */
+.ref-card__art {
+  width: 100px;
+  height: 120px;
+  display: inline-block;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  flex: 0 0 100px;
+}
+

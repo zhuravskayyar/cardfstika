@@ -204,6 +204,10 @@ const TUTORIAL_STAGE_KEY = "cardastika:tutorialStage";
 const TUTORIAL_REWARD_UID_KEY = "cardastika:tutorial:rewardUid";
 const TUTORIAL_REWARD_ID = "tutorial_reward_dragon";
 
+function tutorialRewardArtFile() {
+  return `${TUTORIAL_REWARD_ID}.webp`;
+}
+
 function newUid() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
   return `tutorial_reward_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -255,7 +259,18 @@ function grantTutorialRewardCard() {
     elementsStored: 0.32,
     protected: false,
     inDeck: true,
-    artFile: "firet_001.webp",
+    // ID-based art file naming across the project.
+    artFile: (() => {
+      const byId = tutorialRewardArtFile();
+      if (byId) return byId;
+      try {
+        const metaCard = (window.getCardById ? window.getCardById(TUTORIAL_REWARD_ID) : (window.CARDS_BY_ID && window.CARDS_BY_ID[TUTORIAL_REWARD_ID])) || null;
+        if (metaCard && metaCard.artFile) return String(metaCard.artFile).trim();
+      } catch (e) {
+        // ignore
+      }
+      return tutorialRewardArtFile();
+    })(),
     bio: "Навчальний дракон, який отримуєш після першої перемоги в дуелі. Його сила зростає при прокачці і відкриває наступний крок навчання.",
     source: "tutorial",
   };
@@ -474,33 +489,19 @@ document.addEventListener("DOMContentLoaded", () => {
         .reverse()
         .map((e) => {
           const t = asInt(e?.turn);
-          // Prefer canonical meta artFile when available (fallback to previous hardcoded value)
-          let rewardArt = "firet_001.webp";
-          try {
-            const metaCard = (window.getCardById ? window.getCardById(TUTORIAL_REWARD_ID) : (window.CARDS_BY_ID && window.CARDS_BY_ID[TUTORIAL_REWARD_ID])) || null;
-            if (metaCard && metaCard.artFile) rewardArt = String(metaCard.artFile).trim();
-          } catch (e) {
-            // ignore and keep fallback
-          }
+          const slot = asInt(e?.playerIdx) + 1;
+          const pm = Number.isFinite(Number(e?.pMult)) ? Number(e.pMult) : 1;
+          const em = Number.isFinite(Number(e?.eMult)) ? Number(e.eMult) : 1;
 
-          const reward = {
-            uid,
-            id: TUTORIAL_REWARD_ID,
-            name: "Дракон Навчання",
-            title: "Дракон Навчання",
-            element: "fire",
-            rarity: 5,
-            level: 5,
-            basePower: 70,
-            power: 70,
-            bonusFixed: 0,
-            elementsStored: 0.32,
-            protected: false,
-            inDeck: true,
-            artFile: rewardArt,
-            bio: "Навчальний дракон, який отримуєш після першої перемоги в дуелі. Його сила зростає при прокачці і відкриває наступний крок навчання.",
-            source: "tutorial",
-          };
+          const pEl = String(e?.pEl || "");
+          const eEl = String(e?.eEl || "");
+          const pName = String(e?.pName || "Ваша карта");
+          const eName = String(e?.eName || "Карта ворога");
+          const pD = asInt(e?.pDmg);
+          const eD = asInt(e?.eDmg);
+
+          const swords = swordIconForMult(pm, em);
+          const pBg = miniArtBg(e?.pArt, pEl);
           const eBg = miniArtBg(e?.eArt, eEl);
 
           return `

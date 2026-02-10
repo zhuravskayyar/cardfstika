@@ -17,7 +17,7 @@
       "basePower": 12,
       "rarity": "common",
       "artNum": 1,
-      "artFile": "fire_001.webp"
+      "artFile": "starter_fire_swordsman.webp"
     },
     {
       "id": "starter_fire_acolyte",
@@ -26,7 +26,7 @@
       "basePower": 12,
       "rarity": "common",
       "artNum": 2,
-      "artFile": "fire_002.webp"
+      "artFile": "starter_fire_acolyte.webp"
     },
     {
       "id": "starter_fire_scout",
@@ -35,7 +35,7 @@
       "basePower": 12,
       "rarity": "common",
       "artNum": 3,
-      "artFile": "fire_003.webp"
+      "artFile": "starter_fire_scout.webp"
     },
     {
       "id": "starter_water_sailor",
@@ -44,7 +44,7 @@
       "basePower": 12,
       "rarity": "common",
       "artNum": 1,
-      "artFile": "water_001.webp"
+      "artFile": "starter_water_sailor.webp"
     },
     {
       "id": "starter_water_healer",
@@ -53,7 +53,7 @@
       "basePower": 12,
       "rarity": "common",
       "artNum": 2,
-      "artFile": "water_002.webp"
+      "artFile": "starter_water_healer.webp"
     },
     {
       "id": "starter_air_messenger",
@@ -62,7 +62,7 @@
       "basePower": 12,
       "rarity": "common",
       "artNum": 1,
-      "artFile": "air_001.webp"
+      "artFile": "starter_air_messenger.webp"
     },
     {
       "id": "starter_air_fencer",
@@ -71,7 +71,7 @@
       "basePower": 12,
       "rarity": "common",
       "artNum": 2,
-      "artFile": "air_002.webp"
+      "artFile": "starter_air_fencer.webp"
     },
     {
       "id": "starter_earth_guard",
@@ -80,7 +80,7 @@
       "basePower": 12,
       "rarity": "common",
       "artNum": 1,
-      "artFile": "earth_001.webp"
+      "artFile": "starter_earth_guard.webp"
     },
     {
       "id": "starter_earth_miner",
@@ -89,7 +89,7 @@
       "basePower": 12,
       "rarity": "common",
       "artNum": 2,
-      "artFile": "earth_002.webp"
+      "artFile": "starter_earth_miner.webp"
     },
     {
       "id": "sea_lord_triton",
@@ -101,31 +101,31 @@
         "Господарі морів"
       ],
       "artNum": 3,
-      "artFile": "water_003.webp"
+      "artFile": "sea_lord_triton.webp"
     },
     {
       "id": "storm_corsair",
       "title": "Адмірал",
-      "element": "air",
+      "element": "water",
       "basePower": 14,
       "rarity": "uncommon",
       "collections": [
         "Господарі морів"
       ],
       "artNum": 3,
-      "artFile": "air_003.webp"
+      "artFile": "storm_corsair.webp"
     },
     {
       "id": "reef_sentinel",
       "title": "Океаніда",
-      "element": "earth",
+      "element": "water",
       "basePower": 15,
       "rarity": "uncommon",
       "collections": [
         "Господарі морів"
       ],
       "artNum": 3,
-      "artFile": "earth_003.webp"
+      "artFile": "reef_sentinel.webp"
     },
     {
       "id": "siren_choir",
@@ -137,7 +137,7 @@
         "Господарі морів"
       ],
       "artNum": 4,
-      "artFile": "water_004.webp"
+      "artFile": "siren_choir.webp"
     },
     {
       "id": "depth_harpooner",
@@ -149,7 +149,7 @@
         "Господарі морів"
       ],
       "artNum": 5,
-      "artFile": "water_005.webp"
+      "artFile": "depth_harpooner.webp"
     },
     {
       "id": "salt_mage",
@@ -166,7 +166,7 @@
     {
       "id": "gale_sailmaster",
       "title": "Дельфін",
-      "element": "air",
+      "element": "water",
       "basePower": 13,
       "rarity": "common",
       "collections": [
@@ -176,9 +176,9 @@
       "artFile": "air_004.webp"
     },
     {
-      "id": "black_keel_captain",
-      "title": "Ундина",
-      "element": "fire",
+      "id": "elem_tide_drop",
+      "title": "Ундін",
+      "element": "water",
       "basePower": 15,
       "rarity": "rare",
       "collections": [
@@ -533,7 +533,7 @@
         "Елементалі"
       ],
       "artNum": 12,
-      "artFile": "fire_012.webp"
+      "artFile": "elem_flame_spark.webp"
     },
     {
       "id": "elem_tide_drop",
@@ -545,7 +545,7 @@
         "Елементалі"
       ],
       "artNum": 10,
-      "artFile": "water_010.webp"
+      "artFile": "elem_tide_drop.webp"
     },
     {
       "id": "elem_gale_wisp",
@@ -557,7 +557,7 @@
         "Елементалі"
       ],
       "artNum": 15,
-      "artFile": "air_015.webp"
+      "artFile": "elem_gale_wisp.webp"
     },
     {
       "id": "elem_stone_seed",
@@ -569,7 +569,7 @@
         "Елементалі"
       ],
       "artNum": 12,
-      "artFile": "earth_012.webp"
+      "artFile": "elem_stone_seed.webp"
     },
     {
       "id": "war_elem_flamebrand",

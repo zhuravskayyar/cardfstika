@@ -155,6 +155,8 @@ function normalizeCard(raw, idx) {
   // Support both 'art' (full URL) and 'artFile' (filename only)
   let art = String(raw.art || raw.image || raw.img || raw.cover || "").trim();
   const artFile = String(raw.artFile || "").trim();
+  const idArtFile = id ? (/\.[a-z0-9]+$/i.test(id) ? id : `${id}.webp`) : "";
+  if (!art && idArtFile) art = `../../assets/cards/arts/${idArtFile}`;
   if (!art && artFile) art = `../../assets/cards/arts/${artFile}`;
   const protectedFlag = !!(raw.protected ?? raw.isProtected ?? raw.locked ?? false);
   const isSource = !!(raw.isSource);

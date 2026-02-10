@@ -1,6 +1,18 @@
 // src/collection-card-open.js — separate card view for collection (not the deck screen)
 import "./account.js";
-import { buildFoundSet } from "./collections-core.js";
+import { buildFoundMatcher } from "./collections-core.js";
+import { fixMojibake } from "./core/mojibake.js";
+
+const LEGACY_CARD_ID_ALIASES = {
+  elem_01: "elem_flame_spark",
+  elem_02: "elem_tide_drop",
+  elem_03: "elem_gale_wisp",
+  elem_04: "elem_stone_seed",
+  battle_elem_01: "war_elem_flamebrand",
+  battle_elem_02: "war_elem_tidehammer",
+  battle_elem_03: "war_elem_stormclaw",
+  battle_elem_04: "war_elem_rockfist",
+};
 
 function $(id) {
   return document.getElementById(id);
@@ -62,37 +74,6 @@ function escapeXml(s) {
     .replaceAll("'", "&apos;");
 }
 
-function buildPlaceholderArt(element, title = "") {
-  const el = String(element || "").toLowerCase().trim();
-  const palette = {
-    fire: ["#ff6a4a", "#2a0c05"],
-    water: ["#4aa3ff", "#061122"],
-    earth: ["#4ee07a", "#05140b"],
-    air: ["#f6c35c", "#1a1406"],
-  }[el] || ["#8fb6ff", "#0b0b12"];
-
-  const safeTitle = String(title || "").slice(0, 40);
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">` +
-    `<defs>` +
-    `<linearGradient id="g" x1="0" y1="0" x2="0" y2="1">` +
-    `<stop offset="0" stop-color="${palette[0]}"/>` +
-    `<stop offset="1" stop-color="${palette[1]}"/>` +
-    `</linearGradient>` +
-    `</defs>` +
-    `<rect width="600" height="800" fill="url(#g)"/>` +
-    `<circle cx="470" cy="170" r="140" fill="rgba(255,255,255,0.10)"/>` +
-    `<circle cx="110" cy="640" r="180" fill="rgba(0,0,0,0.18)"/>` +
-    (safeTitle
-      ? `<text x="40" y="740" font-size="34" font-family="serif" fill="rgba(255,255,255,0.85)">${escapeXml(
-          safeTitle,
-        )}</text>`
-      : "") +
-    `</svg>`;
-
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
 function normalizeRarityClass(raw) {
   if (!raw) return "";
   if (typeof raw === "number" && Number.isFinite(raw)) {
@@ -134,10 +115,67 @@ async function loadCardBioMap() {
 }
 
 function normTitle(s) {
-  return String(s || "")
+  return fixMojibake(String(s || ""))
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function normalizeElement(raw) {
+  const s = String(raw || "").toLowerCase().trim();
+  if (s === "wind") return "air";
+  if (s === "fire" || s === "water" || s === "air" || s === "earth") return s;
+  return "";
+}
+
+function normalizeArtUrl(raw) {
+  const s = String(raw || "").trim();
+  if (!s) return "";
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(s)) return s;
+  if (s.startsWith("../../") || s.startsWith("../")) return s;
+  if (s.startsWith("./assets/")) return getPath(s.slice(2));
+  if (s.startsWith("assets/")) return getPath(s);
+  return s;
+}
+
+function normalizeArtFileName(rawFile) {
+  const s = String(rawFile || "").trim();
+  if (!s) return "";
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(s)) return s;
+  if (s.startsWith("../../") || s.startsWith("../") || s.startsWith("./assets/") || s.startsWith("assets/")) return s;
+  if (!/\.[a-z0-9]+$/i.test(s)) return `${s}.webp`;
+  return s;
+}
+
+function artFileFromCardId(cardId) {
+  const id = String(cardId || "").trim();
+  if (!id) return "";
+  return normalizeArtFileName(id);
+}
+
+function artUrlFromFileLike(rawFile) {
+  const f = normalizeArtFileName(rawFile);
+  if (!f) return "";
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(f)) return f;
+  if (f.startsWith("../../") || f.startsWith("../") || f.startsWith("./assets/") || f.startsWith("assets/")) {
+    return normalizeArtUrl(f);
+  }
+  return getPath(`assets/cards/arts/${f}`);
+}
+
+function resolveCardArtUrl(cardLike, metaLike = null) {
+  const card = cardLike && typeof cardLike === "object" ? cardLike : null;
+  const meta = metaLike && typeof metaLike === "object" ? metaLike : null;
+  if (!card && !meta) return "";
+
+  const id = String(meta?.id || card?.id || card?.cardId || card?.card_id || "").trim();
+  const byId = artUrlFromFileLike(artFileFromCardId(id));
+  const byMetaFile = artUrlFromFileLike(meta?.artFile || "");
+  const byCardFile = artUrlFromFileLike(card?.artFile || "");
+  const byCardArt = normalizeArtUrl(card?.art || card?.image || card?.img || card?.cover || "");
+  const byMetaArt = normalizeArtUrl(meta?.art || meta?.image || meta?.img || meta?.cover || "");
+
+  return byId || byMetaFile || byCardFile || byCardArt || byMetaArt || "";
 }
 
 async function loadTitleBioMap() {
@@ -219,11 +257,7 @@ async function loadCardFromBase(id) {
     const raw = list.find((c) => c && String(c.id) === String(id));
     if (!raw) return null;
     const power = Number(raw.power ?? raw.basePower ?? 0);
-    // Support both 'art' (full URL) and 'artFile' (filename only)
-    let art = String(raw.art ?? "").trim();
-    if (!art && raw.artFile) {
-      art = getPath(`assets/cards/arts/${raw.artFile}`);
-    }
+    const art = resolveCardArtUrl(raw);
     return {
       id: String(raw.id ?? ""),
       title: String(raw.name ?? raw.title ?? raw.id ?? "Карта"),
@@ -244,11 +278,7 @@ async function loadCardFromCatalog(id) {
   const raw = cards.find((c) => c && String(c.id) === String(id));
   if (!raw) return null;
   const power = Number(raw.power ?? raw.basePower ?? 0);
-  // Support both 'art' (full URL) and 'artFile' (filename only)
-  let art = String(raw.art ?? "").trim();
-  if (!art && raw.artFile) {
-    art = getPath(`assets/cards/arts/${raw.artFile}`);
-  }
+  const art = resolveCardArtUrl(raw);
   return {
     id: String(raw.id ?? ""),
     title: String(raw.title ?? raw.name ?? raw.id ?? "Карта"),
@@ -269,11 +299,7 @@ async function loadCardFromCollectionsRichById(id) {
     const raw = cards.find((c) => c && String(c.id) === want);
     if (!raw) continue;
     const power = Number(raw.power ?? raw.basePower ?? 0);
-    // Support both 'art' (full URL) and 'artFile' (filename only)
-    let art = String(raw.art ?? "").trim();
-    if (!art && raw.artFile) {
-      art = getPath(`assets/cards/arts/${raw.artFile}`);
-    }
+    const art = resolveCardArtUrl(raw);
     return {
       id: String(raw.id ?? ""),
       title: String(raw.title ?? raw.name ?? raw.id ?? "Карта"),
@@ -320,13 +346,68 @@ function applyElementRarity(card) {
   }
 }
 
-function applyArt(card, { hide = false } = {}) {
+function applyArt(card) {
   const art = $("cardArt");
   if (!art) return;
-  const url = hide
-    ? buildPlaceholderArt(card?.element, "")
-    : String(card?.art || "").trim() || buildPlaceholderArt(card?.element, card?.title);
+  const url = resolveCardArtUrl(card);
   art.style.backgroundImage = url ? `url('${url}')` : "";
+}
+
+async function findCatalogMetaForCard({ id = "", title = "", element = "" } = {}) {
+  const cards = await loadCardCatalog();
+  const byId = new Map((cards || []).filter(Boolean).map((c) => [String(c.id || ""), c]));
+
+  const cardId = String(id || "").trim();
+  const aliasId = LEGACY_CARD_ID_ALIASES[cardId] || "";
+  if (cardId && byId.has(cardId)) return byId.get(cardId);
+  if (aliasId && byId.has(aliasId)) return byId.get(aliasId);
+
+  const t = normTitle(title);
+  const e = normalizeElement(element);
+  if (!t) return null;
+  for (const c of cards || []) {
+    if (!c) continue;
+    const ct = normTitle(c.title || c.name || c.id || "");
+    if (!ct || ct !== t) continue;
+    const ce = normalizeElement(c.element || "");
+    if (!e || !ce || ce === e) return c;
+  }
+  return null;
+}
+
+function parseCollectionIndexFromCardId(id) {
+  const m = String(id || "").match(/^(.*)_([0-9]{2})$/);
+  if (!m) return null;
+  const idx = Number(m[2]);
+  if (!Number.isInteger(idx) || idx < 1) return null;
+  return { collectionId: m[1], index: idx };
+}
+
+async function loadCardFromCollectionsRichByCollectionIndex(collectionId, cardId) {
+  const parsed = parseCollectionIndexFromCardId(cardId);
+  if (!parsed) return null;
+  const colId = String(collectionId || "").trim();
+  if (!colId || parsed.collectionId !== colId) return null;
+
+  const collections = await loadCollectionsRich();
+  const col = (collections || []).find((c) => c && String(c.id || "") === colId);
+  if (!col) return null;
+
+  const raw = Array.isArray(col.cards) ? col.cards[parsed.index - 1] : null;
+  if (!raw) return null;
+
+  const power = Number(raw.power ?? raw.basePower ?? 0);
+  const art = resolveCardArtUrl(raw);
+  return {
+    id: String(raw.id ?? ""),
+    title: String(raw.title ?? raw.name ?? raw.id ?? "Карта"),
+    power: Number.isFinite(power) ? power : 0,
+    level: Number(raw.level ?? 1) || 1,
+    element: String(raw.element ?? "earth"),
+    rarity: normalizeRarityClass(raw.rarity),
+    art,
+    bio: String(raw.bio ?? "").trim(),
+  };
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -346,11 +427,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
   }
 
-  const foundSet = buildFoundSet();
-  const isFound = foundSet.has(String(cardId));
+  const foundMatcher = buildFoundMatcher();
+  let isFound = foundMatcher.hasId(String(cardId));
 
   let card =
     (await loadCardFromCatalog(cardId).catch(() => null)) ||
+    (await loadCardFromCollectionsRichByCollectionIndex(collectionId, cardId).catch(() => null)) ||
     (await loadCardFromCollectionsRichById(cardId).catch(() => null)) ||
     (await loadCardFromBase(cardId).catch(() => null));
 
@@ -366,6 +448,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       bio: "",
     };
   }
+
+  try {
+    const meta = await findCatalogMetaForCard({
+      id: card?.id || cardId,
+      title: card?.title || "",
+      element: card?.element || "",
+    });
+    if (meta) {
+      if (meta.id) card.catalogId = String(meta.id);
+      if (meta.title || meta.name) card.title = String(meta.title || meta.name || card.title || card.id || "");
+      if (meta.element) card.element = String(meta.element);
+      if (meta.rarity && !card.rarity) card.rarity = normalizeRarityClass(meta.rarity);
+
+      const metaArt = resolveCardArtUrl(card, meta);
+      if (metaArt) card.art = metaArt;
+
+      if (meta.bio && !card.bio) card.bio = String(meta.bio);
+    }
+  } catch (e) {
+    console.warn("[collection-card-open] failed to apply catalog meta", e);
+  }
+
+  if (!isFound && card?.catalogId) isFound = foundMatcher.hasId(card.catalogId);
+  if (!isFound) isFound = foundMatcher.hasCard(card);
 
   if (card?.id) {
     try {
@@ -386,7 +492,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (card?.title) document.title = `${String(card.title)} — Cardastika`;
   setText("cardTitle", card.title || "Карта");
   applyElementRarity(card);
-  applyArt(card, { hide: !isFound });
+  applyArt(card);
+
+  const frame = $("cardFrame");
+  const art = $("cardArt");
+  if (frame) frame.classList.toggle("is-locked", !isFound);
+  if (art) art.classList.toggle("is-locked", !isFound);
 
   const bioWrap = $("cardBioWrap");
   const bioEl = $("cardBio");
@@ -395,3 +506,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (bioWrap) bioWrap.style.display = "";
   }
 });
+
+

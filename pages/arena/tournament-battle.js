@@ -104,8 +104,6 @@ function normalizeCard(raw, fallbackId) {
   });
   if (artResolved?.art) {
     art = artResolved.art;
-  } else if (!art && raw.artFile) {
-    art = `../../assets/cards/arts/${raw.artFile}`;
   }
 
   return {

@@ -1,6 +1,8 @@
 // src/collections-core.js
 // Мінімальний “двигун” колекцій: прогрес + found/locked
 
+import { fixMojibake } from "./core/mojibake.js";
+
 const EXTRA_FOUND_KEY = "cardastika:foundExtra";
 const ID_ALIASES = [
   ["elem_01", "elem_flame_spark"],
@@ -58,6 +60,24 @@ function normalizeCardId(card) {
   return card?.id ?? card?.cardId ?? card?.slug ?? card?.uid ?? null;
 }
 
+function normalizeElement(raw) {
+  const s = String(raw || "").toLowerCase().trim();
+  if (s === "wind") return "air";
+  if (s === "fire" || s === "water" || s === "air" || s === "earth") return s;
+  return "";
+}
+
+function normalizeTitle(raw) {
+  return fixMojibake(String(raw || "")).toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function fingerprintCard(card) {
+  const title = normalizeTitle(card?.title ?? card?.name ?? "");
+  const element = normalizeElement(card?.element);
+  if (!title || !element) return "";
+  return `${title}|${element}`;
+}
+
 function getExtraFoundIds() {
   const raw = localStorage.getItem(EXTRA_FOUND_KEY);
   if (!raw) return [];
@@ -66,20 +86,31 @@ function getExtraFoundIds() {
 }
 
 export function buildFoundSet() {
+  return new Set(buildFoundMatcher().foundIds);
+}
+
+export function buildFoundMatcher() {
   const inv = getActiveInventory();
   const deck = getActiveDeck();
   const found = new Set();
+  const foundFingerprints = new Set();
+
+  const pushCard = (card) => {
+    if (!card || typeof card !== "object") return;
+    const id = normalizeCardId(card);
+    if (id) found.add(String(id));
+    const fp = fingerprintCard(card);
+    if (fp) foundFingerprints.add(fp);
+  };
 
   for (const c of inv) {
-    const id = normalizeCardId(c);
-    if (id) found.add(String(id));
+    pushCard(c);
   }
 
   // Defensive: if something put a card into deck but forgot to add to inventory,
   // still count it as found for collection progress UI.
   for (const c of deck) {
-    const id = normalizeCardId(c);
-    if (id) found.add(String(id));
+    pushCard(c);
   }
 
   // Extra found ids (e.g., trophies) that are not real deck/inventory cards.
@@ -97,7 +128,26 @@ export function buildFoundSet() {
     }
   }
 
-  return found;
+  const hasId = (id) => {
+    const key = String(id || "").trim();
+    if (!key) return false;
+    if (found.has(key)) return true;
+    for (const [legacyId, canonicalId] of ID_ALIASES) {
+      if (key === legacyId && found.has(canonicalId)) return true;
+      if (key === canonicalId && found.has(legacyId)) return true;
+    }
+    return false;
+  };
+
+  const hasCard = (cardLike) => {
+    if (!cardLike || typeof cardLike !== "object") return false;
+    const id = normalizeCardId(cardLike);
+    if (id && hasId(id)) return true;
+    const fp = fingerprintCard(cardLike);
+    return fp ? foundFingerprints.has(fp) : false;
+  };
+
+  return { foundIds: found, hasId, hasCard };
 }
 
 export function computeCollectionProgress(collectionDef, foundSet) {

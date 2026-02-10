@@ -33,6 +33,39 @@ function fmtCurrency(cur) {
   return c || "—";
 }
 
+function normalizeArtFileName(rawFile) {
+  const s = String(rawFile || "").trim();
+  if (!s) return "";
+  if (/^(data:|https?:\/\/|\/)/i.test(s)) return s;
+  if (s.startsWith("../../") || s.startsWith("../") || s.startsWith("./assets/") || s.startsWith("assets/")) return s;
+  if (!/\.[a-z0-9]+$/i.test(s)) return `${s}.webp`;
+  return s;
+}
+
+function artFileFromCardId(cardId) {
+  const id = String(cardId || "").trim();
+  if (!id) return "";
+  return normalizeArtFileName(id);
+}
+
+function artUrlFromFileLike(rawFile) {
+  const f = normalizeArtFileName(rawFile);
+  if (!f) return "";
+  if (/^(data:|https?:\/\/|\/)/i.test(f)) return f;
+  if (f.startsWith("../../") || f.startsWith("../")) return f;
+  if (f.startsWith("./assets/")) return `../../${f.slice(2)}`;
+  if (f.startsWith("assets/")) return `../../${f}`;
+  return `../../assets/cards/arts/${f}`;
+}
+
+function resolveCardArtUrl(card) {
+  const artDirect = String(card?.art || "").trim();
+  const byDirect = artDirect || "";
+  const byId = artUrlFromFileLike(artFileFromCardId(card?.id));
+  const byFile = artUrlFromFileLike(card?.artFile || "");
+  return byDirect || byId || byFile || "";
+}
+
 function buildMiniRefCard(card) {
   const element = normalizeElement(card?.element);
   const rarity = String(card?.rarity || "");
@@ -57,11 +90,7 @@ function buildMiniRefCard(card) {
 
   const art = document.createElement("div");
   art.className = "ref-card__art";
-  // Support both 'art' (full URL) and 'artFile' (filename only)
-  let artUrl = card?.art;
-  if (!artUrl && card?.artFile) {
-    artUrl = `../../assets/cards/arts/${card.artFile}`;
-  }
+  const artUrl = resolveCardArtUrl(card);
   if (artUrl) art.style.backgroundImage = `url('${String(artUrl)}')`;
 
   const elem = document.createElement("div");

@@ -119,34 +119,8 @@ function escapeXml(s) {
 }
 
 function buildPlaceholderArt(element, title = "") {
-  const el = String(element || "").toLowerCase().trim();
-  const palette = {
-    fire: ["#ff6a4a", "#2a0c05"],
-    water: ["#4aa3ff", "#061122"],
-    earth: ["#4ee07a", "#05140b"],
-    air: ["#f6c35c", "#1a1406"],
-  }[el] || ["#8fb6ff", "#0b0b12"];
-
-  const safeTitle = String(title || "").slice(0, 34);
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220">` +
-    `<defs>` +
-    `<linearGradient id="g" x1="0" y1="0" x2="0" y2="1">` +
-    `<stop offset="0" stop-color="${palette[0]}"/>` +
-    `<stop offset="1" stop-color="${palette[1]}"/>` +
-    `</linearGradient>` +
-    `</defs>` +
-    `<rect width="220" height="220" fill="url(#g)"/>` +
-    `<circle cx="170" cy="56" r="60" fill="rgba(255,255,255,0.11)"/>` +
-    `<circle cx="56" cy="172" r="80" fill="rgba(0,0,0,0.2)"/>` +
-    `<rect x="0" y="170" width="220" height="50" fill="rgba(0,0,0,0.28)"/>` +
-    `<text x="10" y="202" font-size="16" font-family="serif" fill="rgba(255,255,255,0.92)">${escapeXml(safeTitle)}</text>` +
-    `</svg>`;
-
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-function weekIndexUtc(date = new Date()) {
+  // Placeholders are removed — return empty string so no placeholder image is used.
+  return "";
   const oneDay = 24 * 60 * 60 * 1000;
   const utc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
   const weekday = (new Date(utc).getUTCDay() + 6) % 7;
@@ -379,7 +353,8 @@ function setupCardModal(detailIndex) {
     const title = String(card?.title || "Карта");
     const element = normalizeElement(card?.element);
     titleEl.textContent = title;
-    artEl.style.backgroundImage = `url('${buildPlaceholderArt(element, title)}')`;
+    const artBg = buildPlaceholderArt(element, title);
+    if (artBg) artEl.style.backgroundImage = `url('${artBg}')`;
 
     const byId = String(detailIndex?.bioById?.get(id) || "").trim();
     const byTitle = String(detailIndex?.bioByTitle?.get(title.toLowerCase()) || "").trim();
@@ -511,7 +486,8 @@ function renderPoolSections(host, offerId, cfg, allCards, { onCardClick } = {}) 
 
       const art = document.createElement("div");
       art.className = `shop-pool-art ${rarityClassFromQuality(sectionCfg.quality)}`.trim();
-      art.style.backgroundImage = `url('${buildPlaceholderArt(card.element, card.title)}')`;
+      const bg = buildPlaceholderArt(card.element, card.title);
+      if (bg) art.style.backgroundImage = `url('${bg}')`;
       item.appendChild(art);
       const open = () => {
         if (typeof onCardClick === "function") onCardClick(card);

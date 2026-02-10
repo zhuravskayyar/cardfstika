@@ -40,6 +40,31 @@ function normalizeArtUrl(raw) {
   return s;
 }
 
+function normalizeArtFileName(raw) {
+  const s = safeString(raw, "").trim();
+  if (!s) return "";
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(s)) return s;
+  if (s.startsWith("../../") || s.startsWith("../") || s.startsWith("./assets/") || s.startsWith("assets/")) return s;
+  if (!/\.[a-z0-9]+$/i.test(s)) return `${s}.webp`;
+  return s;
+}
+
+export function artFileFromCardId(cardId) {
+  const id = safeString(cardId, "").trim();
+  if (!id) return "";
+  return normalizeArtFileName(id);
+}
+
+function artUrlFromFile(fileName) {
+  const f = normalizeArtFileName(fileName);
+  if (!f) return "";
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(f)) return f;
+  if (f.startsWith("../../") || f.startsWith("../") || f.startsWith("./assets/") || f.startsWith("assets/")) {
+    return normalizeArtUrl(f);
+  }
+  return `${rootPrefix()}assets/cards/arts/${f}`;
+}
+
 export function normalizeElement(x) {
   const s = safeString(x, "").toLowerCase().trim();
   if (["fire", "water", "air", "earth"].includes(s)) return s;
@@ -100,13 +125,15 @@ export async function ensureCardCatalogLoaded() {
           const id = safeString(c.id).trim();
           if (!id) continue;
           const prev = merged.get(id) || { id };
-          const artFile = safeString(c.artFile ?? prev.artFile ?? "");
+          const legacyArtFile = normalizeArtFileName(c.artFile ?? prev.legacyArtFile ?? prev.artFile ?? "");
+          const artFile = artFileFromCardId(id) || legacyArtFile;
           merged.set(id, {
             id,
             title: safeString(c.title ?? c.name ?? prev.title ?? c.id, id),
             element: normalizeElement(c.element) || prev.element || "earth",
             rarity: safeString(c.rarity ?? prev.rarity ?? ""),
             artFile,
+            legacyArtFile,
           });
         }
         loadedCatalog = true;
@@ -171,15 +198,24 @@ export function resolveCardArt(rawCard) {
   const meta = getCardMetaById(id) || getCardMetaByTitleAndElement(title, element);
 
   const ownArt = normalizeArtUrl(card.art ?? card.image ?? card.img ?? card.cover ?? "");
-  const ownArtFile = safeString(card.artFile ?? "", "").trim();
-  const metaArtFile = safeString(meta?.artFile ?? "", "").trim();
+  const ownArtFile = normalizeArtFileName(safeString(card.artFile ?? "", "").trim());
+  const metaArtFile = normalizeArtFileName(safeString(meta?.artFile ?? "", "").trim());
+  const metaLegacyArtFile = normalizeArtFileName(safeString(meta?.legacyArtFile ?? "", "").trim());
+  const idArtFile = artFileFromCardId(meta?.id || id);
   // Canonical catalog art has priority over persisted per-card art fields.
-  const artFile = metaArtFile || ownArtFile;
-  const byFile = artFile ? `${rootPrefix()}assets/cards/arts/${artFile}` : "";
+  const artFile = idArtFile || metaArtFile || metaLegacyArtFile || ownArtFile;
+  const byId = artUrlFromFile(idArtFile);
+  const byMetaFile = artUrlFromFile(metaArtFile);
+  const byMetaLegacy = artUrlFromFile(metaLegacyArtFile);
+  const byFile = artUrlFromFile(ownArtFile);
   const usableOwn = ownArt && !isSvgPlaceholderArt(ownArt) ? ownArt : "";
 
+  // If no specific art file is available, fallback to a per-element default
+  // (e.g. `fire_001.webp`, `water_001.webp`) so we don't show SVG placeholders.
+  const elementDefault = element ? `${rootPrefix()}assets/cards/arts/${element}_001.webp` : "";
+
   return {
-    art: byFile || usableOwn || "",
+    art: byId || byMetaFile || byMetaLegacy || byFile || usableOwn || elementDefault || "",
     artFile,
     meta,
   };
@@ -198,6 +234,7 @@ export function decorateCard(rawCard, belongsTo = "") {
   // If meta exists, always prefer it as the canonical title.
   if (meta?.title) card.title = meta.title;
   else if (existingTitle) card.title = existingTitle;
+  else card.title = id || "";
 
   // If meta exists, prefer its element; otherwise keep existing normalized.
   const mEl = normalizeElement(meta?.element);

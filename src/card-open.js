@@ -295,32 +295,8 @@
   }
 
   function buildPlaceholderArt(element, title = "") {
-    const el = String(element || "").toLowerCase().trim();
-    const palette = {
-      fire: ["#ff6a4a", "#2a0c05"],
-      water: ["#4aa3ff", "#061122"],
-      earth: ["#4ee07a", "#05140b"],
-      air: ["#f6c35c", "#1a1406"],
-    }[el] || ["#8fb6ff", "#0b0b12"];
-
-    const safeTitle = String(title || "").slice(0, 40);
-    const svg =
-      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">` +
-      `<defs>` +
-      `<linearGradient id="g" x1="0" y1="0" x2="0" y2="1">` +
-      `<stop offset="0" stop-color="${palette[0]}"/>` +
-      `<stop offset="1" stop-color="${palette[1]}"/>` +
-      `</linearGradient>` +
-      `</defs>` +
-      `<rect width="600" height="800" fill="url(#g)"/>` +
-      `<circle cx="470" cy="170" r="140" fill="rgba(255,255,255,0.10)"/>` +
-      `<circle cx="110" cy="640" r="180" fill="rgba(0,0,0,0.18)"/>` +
-      `<text x="40" y="740" font-size="34" font-family="serif" fill="rgba(255,255,255,0.85)">${escapeXml(
-        safeTitle,
-      )}</text>` +
-      `</svg>`;
-
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    // Placeholders are removed — return empty string so no placeholder image is used.
+    return "";
   }
 
   async function loadCardBioMap() {
@@ -429,8 +405,8 @@
 
     const art = $("cardArt");
     if (art) {
-      const artByFile = card?.artFile ? getPath(`assets/cards/arts/${String(card.artFile).trim()}`) : "";
-      const url = String(card?.art || "").trim() || artByFile || buildPlaceholderArt(card?.element, card?.title);
+      const artResolved = resolveArtByIdAndFile(card);
+      const url = artResolved.art || buildPlaceholderArt(card?.element, card?.title);
       art.style.backgroundImage = url ? `url('${url}')` : "";
     }
 
@@ -505,11 +481,64 @@
   function normalizeArtUrl(rawUrl) {
     const raw = String(rawUrl || "").trim();
     if (!raw) return "";
-    if (/^(data:|https?:\/\/|\/)/i.test(raw)) return raw;
-    if (raw.startsWith("../../") || raw.startsWith("../")) return raw;
-    if (raw.startsWith("./assets/")) return getPath(raw.slice(2));
-    if (raw.startsWith("assets/")) return getPath(raw);
-    return raw;
+    const wrapped = raw.match(/^url\((['"]?)(.*?)\1\)$/i);
+    const unwrapped = wrapped ? String(wrapped[2] || "").trim() : raw;
+    if (!unwrapped) return "";
+    if (/^(data:|https?:\/\/|\/)/i.test(unwrapped)) return unwrapped;
+    if (unwrapped.startsWith("../../") || unwrapped.startsWith("../")) return unwrapped;
+    if (unwrapped.startsWith("./assets/")) return getPath(unwrapped.slice(2));
+    if (unwrapped.startsWith("assets/")) return getPath(unwrapped);
+    return unwrapped;
+  }
+
+  function normalizeArtFileName(rawFile) {
+    const s = String(rawFile || "").trim();
+    if (!s) return "";
+    if (/^(data:|https?:\/\/|\/)/i.test(s)) return s;
+    if (s.startsWith("../../") || s.startsWith("../") || s.startsWith("./assets/") || s.startsWith("assets/")) return s;
+    if (!/\.[a-z0-9]+$/i.test(s)) return `${s}.webp`;
+    return s;
+  }
+
+  function artFileFromCardId(cardId) {
+    const id = String(cardId || "").trim();
+    if (!id) return "";
+    return normalizeArtFileName(id);
+  }
+
+  function artUrlFromFileLike(rawFile) {
+    const f = normalizeArtFileName(rawFile);
+    if (!f) return "";
+    if (/^(data:|https?:\/\/|\/)/i.test(f)) return f;
+    if (f.startsWith("../../") || f.startsWith("../") || f.startsWith("./assets/") || f.startsWith("assets/")) {
+      return normalizeArtUrl(f);
+    }
+    return getPath(`assets/cards/arts/${f}`);
+  }
+
+  function resolveArtByIdAndFile(cardLike, metaLike = null) {
+    const card = cardLike && typeof cardLike === "object" ? cardLike : {};
+    const meta = metaLike && typeof metaLike === "object" ? metaLike : null;
+
+    const id = String(meta?.id || card.id || card.cardId || card.card_id || "").trim();
+    const byId = artUrlFromFileLike(artFileFromCardId(id));
+    const byMetaFile = artUrlFromFileLike(meta?.artFile || "");
+    const byCardFile = artUrlFromFileLike(card.artFile || "");
+
+    const ownRaw = normalizeArtUrl(card.art || card.image || card.img || card.cover || "");
+    const usableOwn = ownRaw && !isPlaceholderArtUrl(ownRaw) ? ownRaw : "";
+    const metaRaw = normalizeArtUrl(meta?.art || meta?.image || meta?.img || meta?.cover || "");
+    const usableMeta = metaRaw && !isPlaceholderArtUrl(metaRaw) ? metaRaw : "";
+
+    const element = String(card.element || meta?.element || "").toLowerCase().trim();
+    const elementDefault = element ? getPath(`assets/cards/arts/${element}_001.webp`) : "";
+    const art = byId || byMetaFile || byCardFile || usableOwn || usableMeta || elementDefault || "";
+    const artFile =
+      artFileFromCardId(id) ||
+      normalizeArtFileName(meta?.artFile || "") ||
+      normalizeArtFileName(card.artFile || "");
+
+    return { art, artFile };
   }
 
   function findMetaByIdWithAlias(id) {
@@ -519,6 +548,17 @@
     const alias = LEGACY_CARD_ID_ALIASES[String(id)] || "";
     if (!alias) return null;
     return cardsJsonCache.get(alias) || null;
+  }
+
+  function findMetaByCardLike(card) {
+    if (!card) return null;
+    const byId = findMetaByIdWithAlias(card?.id);
+    if (byId) return byId;
+    if (!cardsJsonByTitleElementCache) return null;
+    const t = String(card?.title || card?.name || "").toLowerCase().replace(/\s+/g, " ").trim();
+    if (!t) return null;
+    const e = String(card?.element || "").toLowerCase().trim();
+    return cardsJsonByTitleElementCache.get(`${t}|${e || "*"}`) || cardsJsonByTitleElementCache.get(`${t}|*`) || null;
   }
 
   function migrateCardsInPlace(levelsData, list) {
@@ -766,13 +806,13 @@
 
       const artEl = btn.querySelector(".ref-card__art");
       if (artEl) {
-        const byFile = c?.artFile ? getPath(`assets/cards/arts/${String(c.artFile).trim()}`) : "";
-        const metaById = findMetaByIdWithAlias(c?.id);
-        const byMetaFile = metaById?.artFile ? getPath(`assets/cards/arts/${String(metaById.artFile).trim()}`) : "";
-        const fromCard = normalizeArtUrl(c.art);
-        const realCardArt = fromCard && !isPlaceholderArtUrl(fromCard) ? fromCard : "";
-        const url = byMetaFile || byFile || realCardArt || buildPlaceholderArt(c?.element, c?.title);
-        artEl.style.backgroundImage = `url('${url}')`;
+        const meta = findMetaByCardLike(c);
+        const artResolved = resolveArtByIdAndFile(c, meta);
+        const url = artResolved.art || buildPlaceholderArt(c?.element, c?.title);
+        artEl.style.backgroundImage = `url('${String(url).replace(/'/g, "\\'")}')`;
+        artEl.style.backgroundSize = "cover";
+        artEl.style.backgroundPosition = "center";
+        artEl.style.backgroundRepeat = "no-repeat";
       }
 
       const absorb = document.createElement("button");
@@ -1040,13 +1080,9 @@
         if (meta?.title) card.title = String(meta.title);
         if (meta?.element) card.element = String(meta.element);
         if (meta?.rarity && !card.rarity) card.rarity = normalizeRarityClass(meta.rarity);
-        // Canonical art from catalog has priority.
-        if (meta?.artFile) {
-          card.artFile = String(meta.artFile);
-          card.art = getPath(`assets/cards/arts/${meta.artFile}`);
-        } else if (meta?.art && !card.art) {
-          card.art = String(meta.art);
-        }
+        const artResolved = resolveArtByIdAndFile(card, meta);
+        if (artResolved.art) card.art = artResolved.art;
+        if (artResolved.artFile) card.artFile = artResolved.artFile;
         if (meta?.bio && !card.bio) card.bio = String(meta.bio);
       } catch (error) {
         console.warn("Failed to apply cards.json title:", error);
@@ -1160,6 +1196,12 @@
 
       let st = loadState();
       let cardRef = findCardRef(st, card);
+      // Warm up cards.json cache for robust art resolving in weak cards list.
+      try {
+        await loadCardsJsonMetaById(card?.id || "", card?.title || card?.name || "", card?.element || "");
+      } catch {
+        // ignore
+      }
       if (cardRef?.card) {
         // Prefer the canonical stored card object (has uid/elementsStored, etc).
         card = mergeCardForView(card, cardRef.card);
