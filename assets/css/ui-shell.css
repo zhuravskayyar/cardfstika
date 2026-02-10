@@ -7159,93 +7159,164 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
   display: flex;
   flex-direction: column;
   gap: 0;
+  background:
+    radial-gradient(110% 80% at 50% -10%, rgba(167, 113, 42, 0.16), transparent 58%),
+    radial-gradient(120% 90% at 90% 120%, rgba(120, 24, 14, 0.14), transparent 60%),
+    linear-gradient(180deg, rgba(25, 17, 12, 0.96), rgba(12, 8, 5, 0.97));
+  border: 1px solid rgba(184, 148, 70, 0.26);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 225, 170, 0.08);
 }
 
 .collections-header {
-  padding: 12px 16px;
-  background: linear-gradient(90deg, rgba(139, 30, 30, 0.7), rgba(42, 79, 110, 0.7));
-  border-bottom: 2px solid var(--heraldic-gold);
-  border-top: 1px solid rgba(184, 148, 70, 0.3);
+  position: relative;
+  padding: 14px 16px 12px;
+  background:
+    linear-gradient(90deg, rgba(108, 29, 18, 0.88), rgba(45, 28, 16, 0.9) 48%, rgba(92, 48, 20, 0.88));
+  border-top: 1px solid rgba(255, 214, 140, 0.22);
+  border-bottom: 2px solid rgba(212, 175, 88, 0.85);
+}
+
+.collections-header::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 226, 170, 0.35), transparent);
 }
 
 .collections-title {
-  font-family: 'EB Garamond', serif;
-  font-size: 24px;
+  font-family: "UnifrakturMaguntia", "Forum", serif;
+  font-size: clamp(30px, 7vw, 42px);
   font-weight: 700;
-  color: var(--heraldic-gold);
+  color: #e7be66;
   margin: 0;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.6px;
+  line-height: 0.98;
+  text-shadow:
+    0 1px 0 rgba(40, 20, 8, 0.95),
+    0 3px 0 rgba(0, 0, 0, 0.65),
+    0 12px 22px rgba(0, 0, 0, 0.45);
 }
 
 .collections-intro {
-  padding: 14px 16px;
-  background: linear-gradient(135deg, rgba(42, 79, 110, 0.4), rgba(30, 60, 90, 0.4));
-  border-bottom: 1px solid rgba(184, 148, 70, 0.2);
+  padding: 12px 16px 14px;
+  background: linear-gradient(180deg, rgba(40, 25, 15, 0.88), rgba(18, 12, 8, 0.86));
+  border-bottom: 1px solid rgba(184, 148, 70, 0.28);
 }
 
 .collections-intro p {
-  font-family: 'EB Garamond', serif;
-  font-size: 13px;
-  color: #d4af37;
+  font-family: "EB Garamond", serif;
+  font-size: 15px;
+  color: #e1c27b;
   margin: 0;
   line-height: 1.5;
   text-align: center;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
 }
 
 .collections-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   padding: 12px;
   overflow-y: auto;
   align-content: start;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(90, 45, 24, 0.18), transparent 70%),
+    linear-gradient(180deg, rgba(14, 9, 6, 0.6), rgba(10, 7, 4, 0.2));
+  scrollbar-color: rgba(190, 145, 72, 0.65) rgba(18, 12, 8, 0.6);
 }
 
 .collection-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  background: linear-gradient(135deg, rgba(42, 79, 110, 0.6), rgba(30, 60, 90, 0.6));
-  border: 1px solid rgba(184, 148, 70, 0.3);
-  border-radius: 6px;
+  gap: 8px;
+  background:
+    linear-gradient(180deg, rgba(26, 16, 10, 0.84), rgba(13, 9, 6, 0.9)),
+    radial-gradient(120% 85% at 50% -20%, rgba(198, 128, 48, 0.16), transparent 60%),
+    var(--btn-tex-main) center/cover no-repeat;
+  border: 1px solid rgba(171, 129, 70, 0.72);
+  border-radius: 10px;
   padding: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
   text-decoration: none;
+  box-shadow:
+    0 8px 14px rgba(0, 0, 0, 0.44),
+    inset 0 1px 0 rgba(255, 218, 162, 0.08);
 }
 
 .collection-card:hover {
-  background: linear-gradient(135deg, rgba(52, 99, 130, 0.8), rgba(40, 70, 100, 0.8));
-  border-color: rgba(184, 148, 70, 0.6);
-  box-shadow: 0 2px 8px rgba(184, 148, 70, 0.2);
-  transform: translateY(-2px);
+  border-color: rgba(224, 170, 84, 0.92);
+  box-shadow:
+    0 10px 18px rgba(0, 0, 0, 0.52),
+    0 0 14px rgba(184, 148, 70, 0.22);
+  transform: translateY(-2px) scale(1.01);
+  filter: brightness(1.04);
+}
+
+.collection-card:active {
+  transform: translateY(1px);
 }
 
 .collection-card__image {
   width: 100%;
   aspect-ratio: 1;
-  background: linear-gradient(135deg, #1a3a5a, #0a1a3a);
-  border: 1px solid rgba(184, 148, 70, 0.2);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-size: 24px;
+  border: 1px solid rgba(229, 191, 124, 0.52);
+  border-radius: 8px;
+  background:
+    radial-gradient(80% 70% at 40% 20%, rgba(200, 143, 64, 0.16), transparent 70%),
+    linear-gradient(135deg, rgba(38, 24, 14, 0.95), rgba(17, 11, 7, 0.98));
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.collection-card__image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 230, 180, 0.08), rgba(0, 0, 0, 0.52) 72%),
+    radial-gradient(95% 65% at 50% 110%, rgba(0, 0, 0, 0.42), transparent 68%);
+}
+
+.collection-card__image.has-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 220, 155, 0.16);
+  pointer-events: none;
 }
 
 .collection-card__title {
-  font-family: 'EB Garamond', serif;
-  font-size: 11px;
+  font-family: "Forum", "EB Garamond", serif;
+  font-size: 13px;
   font-weight: 600;
-  color: #d4af37;
+  color: #e3bd6a;
   margin: 0;
   text-align: center;
-  line-height: 1.2;
-  min-height: 20px;
+  line-height: 1.15;
+  min-height: 30px;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 5px 10px rgba(0, 0, 0, 0.35);
 }
 
 .collection-card__progress {
@@ -7254,10 +7325,12 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
 }
 
 .collection-card__count {
-  font-family: 'EB Garamond', serif;
-  font-size: 10px;
-  color: #a8a8a8;
+  font-family: "EB Garamond", serif;
+  font-size: 12px;
+  color: rgba(239, 220, 181, 0.9);
   font-weight: 600;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.65);
 }
 
 /* ============================================================
@@ -7268,24 +7341,39 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: linear-gradient(180deg, #0a1520 0%, #0d1f2d 50%, #0a1520 100%);
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(166, 110, 45, 0.2), transparent 58%),
+    radial-gradient(130% 110% at 0% 100%, rgba(114, 24, 16, 0.18), transparent 62%),
+    linear-gradient(180deg, rgba(20, 13, 9, 0.97), rgba(10, 7, 4, 0.98));
+  border: 1px solid rgba(184, 148, 70, 0.28);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 38px rgba(0, 0, 0, 0.54),
+    inset 0 1px 0 rgba(255, 224, 164, 0.06);
 }
 
 .collection-open-header {
-  padding: 14px 16px 8px;
-  background: linear-gradient(90deg, rgba(42, 79, 110, 0.6), rgba(30, 60, 90, 0.8), rgba(42, 79, 110, 0.6));
-  border-bottom: 2px solid var(--heraldic-gold);
+  padding: 14px 16px 10px;
+  background:
+    linear-gradient(90deg, rgba(104, 34, 20, 0.86), rgba(36, 21, 13, 0.9), rgba(92, 46, 19, 0.86));
+  border-bottom: 2px solid rgba(212, 175, 88, 0.88);
 }
 
 .collection-open-title {
-  font-family: 'EB Garamond', serif;
-  font-size: 22px;
+  font-family: "UnifrakturMaguntia", "Forum", serif;
+  font-size: clamp(28px, 6.5vw, 40px);
   font-weight: 700;
-  color: var(--heraldic-gold);
+  color: #e7bf67;
   margin: 0;
   text-align: center;
   text-transform: none;
   letter-spacing: 0.5px;
+  line-height: 0.98;
+  text-shadow:
+    0 1px 0 rgba(44, 22, 8, 0.92),
+    0 3px 0 rgba(0, 0, 0, 0.65),
+    0 10px 20px rgba(0, 0, 0, 0.45);
 }
 
 .collection-open-decor {
@@ -7293,14 +7381,15 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
   justify-content: center;
   gap: 100px;
   padding: 6px 0;
-  background: linear-gradient(90deg, transparent, rgba(42, 79, 110, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(181, 132, 64, 0.16), transparent);
 }
 
 .collection-open-decor__item {
-  font-size: 20px;
-  color: var(--heraldic-gold);
-  opacity: 0.7;
+  font-size: 18px;
+  color: #d9b464;
+  opacity: 0.78;
   transform: scaleX(-1);
+  text-shadow: 0 0 8px rgba(184, 148, 70, 0.35);
 }
 
 .collection-open-decor__item:last-child {
@@ -7310,17 +7399,20 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
 .collection-open-art {
   display: flex;
   justify-content: center;
-  padding: 10px 0;
+  padding: 12px 0 10px;
 }
 
 .collection-open-art__frame {
-  width: 100px;
-  height: 100px;
-  border: 2px solid var(--heraldic-gold);
-  border-radius: 8px;
+  width: 108px;
+  height: 108px;
+  border: 2px solid rgba(226, 175, 82, 0.9);
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(184, 148, 70, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.5);
-  background: linear-gradient(135deg, #1a3a5a, #0a1a3a);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.45),
+    0 0 20px rgba(184, 148, 70, 0.25),
+    inset 0 0 16px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(135deg, rgba(48, 30, 18, 0.96), rgba(16, 10, 7, 0.98));
 }
 
 .collection-open-art__frame img {
@@ -7332,20 +7424,20 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
 .collection-open-bonus {
   text-align: center;
   padding: 12px 16px;
-  background: linear-gradient(90deg, transparent, rgba(42, 79, 110, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(153, 102, 45, 0.18), transparent);
 }
 
 .collection-open-bonus__title {
-  font-family: 'EB Garamond', serif;
+  font-family: "EB Garamond", serif;
   font-size: 13px;
-  color: #a0a0a0;
+  color: #bea889;
   margin: 0 0 6px;
 }
 
 .collection-open-bonus__desc {
-  font-family: 'EB Garamond', serif;
+  font-family: "EB Garamond", serif;
   font-size: 14px;
-  color: #fff;
+  color: #f5e9d2;
   margin: 0;
   display: flex;
   align-items: center;
@@ -7354,7 +7446,7 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
 }
 
 .collection-open-bonus__icon {
-  color: var(--heraldic-gold);
+  color: #e2ba66;
 }
 
 .collection-open-bonus__elem {
@@ -7367,13 +7459,13 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
 }
 
 .collection-open-progress__text {
-  font-family: 'EB Garamond', serif;
+  font-family: "EB Garamond", serif;
   font-size: 13px;
-  color: #888;
+  color: #c3ad8a;
 }
 
 .collection-open-progress__text b {
-  color: var(--heraldic-gold);
+  color: #e5bc67;
 }
 
 .collection-open-grid {
@@ -7383,53 +7475,57 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
   padding: 12px 20px;
   max-width: 100%;
   margin: 0 auto;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(60, 60, 60, 0.5);
-  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(20, 13, 9, 0.82), rgba(10, 7, 5, 0.9));
+  border: 1px solid rgba(184, 148, 70, 0.42);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 180, 0.06),
+    0 8px 18px rgba(0, 0, 0, 0.38);
   margin-left: 16px;
   margin-right: 16px;
 }
 
 .collection-open-card {
   aspect-ratio: 1;
-  border: 2px solid rgba(100, 100, 100, 0.5);
-  border-radius: 4px;
+  border: 2px solid rgba(145, 115, 70, 0.7);
+  border-radius: 6px;
   overflow: hidden;
   position: relative;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: linear-gradient(135deg, #1a3a5a, #0a1a3a);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  background: linear-gradient(135deg, rgba(44, 28, 16, 0.96), rgba(14, 9, 6, 0.98));
 }
 
 .collection-open-card:hover {
-  border-color: var(--heraldic-gold);
+  border-color: rgba(227, 176, 83, 0.95);
   transform: scale(1.03);
-  box-shadow: 0 4px 16px rgba(184, 148, 70, 0.3);
+  box-shadow: 0 6px 16px rgba(184, 148, 70, 0.28);
   z-index: 2;
 }
 
 .collection-open-card.is-found {
-  border-color: rgba(184, 148, 70, 0.6);
+  border-color: rgba(215, 168, 84, 0.92);
 }
 
 .collection-open-card.is-locked {
-  border-color: rgba(60, 60, 60, 0.6);
+  border-color: rgba(95, 72, 50, 0.75);
 }
 
 .collection-open-card.is-locked::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.48);
 }
 
 .collection-open-card__art {
   width: 100%;
   height: 100%;
-  background-size: contain;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: #1a2a3a;
+  background-color: #1a120d;
   display: block;
 }
 
@@ -7440,31 +7536,31 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
 }
 
 .collection-open-source p {
-  font-family: 'EB Garamond', serif;
+  font-family: "EB Garamond", serif;
   font-size: 12px;
-  color: #777;
+  color: #b59f80;
   margin: 0 0 6px;
 }
 
 .collection-open-source__link {
-  font-family: 'EB Garamond', serif;
+  font-family: "EB Garamond", serif;
   font-size: 14px;
-  color: #5ba3e0;
+  color: #e0b661;
   text-decoration: underline;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 .collection-open-source__link:hover {
-  color: #8bc4f0;
+  color: #f0cb81;
 }
 
 .collection-open-nav {
   display: flex;
   justify-content: center;
   padding: 12px 16px;
-  background: linear-gradient(90deg, rgba(42, 79, 110, 0.5), rgba(30, 60, 90, 0.7), rgba(42, 79, 110, 0.5));
-  border-top: 1px solid rgba(184, 148, 70, 0.3);
-  border-bottom: 1px solid rgba(184, 148, 70, 0.3);
+  background: linear-gradient(90deg, rgba(93, 33, 20, 0.62), rgba(35, 21, 13, 0.76), rgba(88, 42, 18, 0.62));
+  border-top: 1px solid rgba(184, 148, 70, 0.42);
+  border-bottom: 1px solid rgba(184, 148, 70, 0.24);
 }
 
 .collection-open-nav__btn {
@@ -7472,16 +7568,24 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
   align-items: center;
   gap: 10px;
   padding: 10px 24px;
-  background: linear-gradient(135deg, rgba(42, 79, 110, 0.8), rgba(30, 60, 90, 0.9));
-  border: 2px solid var(--heraldic-gold);
-  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(70, 43, 24, 0.9), rgba(33, 21, 13, 0.95)),
+    var(--btn-tex-wood) center/cover no-repeat;
+  border: 2px solid rgba(220, 169, 82, 0.86);
+  border-radius: 8px;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 222, 169, 0.12);
 }
 
 .collection-open-nav__btn:hover {
-  background: linear-gradient(135deg, rgba(52, 99, 130, 0.9), rgba(40, 70, 100, 1));
-  box-shadow: 0 4px 12px rgba(184, 148, 70, 0.3);
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.48),
+    0 0 14px rgba(184, 148, 70, 0.24);
+  transform: translateY(-1px);
+  filter: brightness(1.04);
 }
 
 .collection-open-nav__icon {
@@ -7489,10 +7593,11 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
 }
 
 .collection-open-nav__text {
-  font-family: 'EB Garamond', serif;
+  font-family: "Forum", "EB Garamond", serif;
   font-size: 16px;
   font-weight: 600;
-  color: var(--heraldic-gold);
+  color: #e4bd69;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
 }
 
 /* ============================================================

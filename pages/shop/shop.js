@@ -105,6 +105,12 @@ const READY_BUNDLES = [
   { id: "bundle_world_legends", title: "Легенди світу", priceGold: 120, kind: "random", quality: "legendary", count: 2, levelRange: [35, 59] },
 ];
 
+function getReadyBundleArt(bundle) {
+  const collectionId = String(bundle?.collectionId || "").trim();
+  if (collectionId === "elementals") return getPath("assets/cards/arts/elem_flame_spark.webp");
+  return getPath("assets/cards/arts/fire_001.webp");
+}
+
 function getPath(path) {
   const isInPages = location.pathname.toLowerCase().includes("/pages/");
   return isInPages ? `../../${path}` : `./${path}`;
@@ -789,9 +795,10 @@ function renderReadyBundles({ state, now }) {
   const card = document.createElement("div");
   card.className = "shop-card";
   card.dataset.bundleId = bundle.id;
+  const bundleArt = getReadyBundleArt(bundle);
 
   card.innerHTML =
-    `<div class="shop-card__art"><img src="../../assets/cards/demo/fire_01.jpg" alt="Набір" /></div>` +
+    `<div class="shop-card__art"><img src="${bundleArt}" alt="Набір" /></div>` +
     `<div class="shop-card__info">` +
       `<h4 class="shop-card__name">${bundle.title}</h4>` +
       `<p class="shop-card__desc">Після покупки банер набору зникне на 24 години.</p>` +

@@ -269,13 +269,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       sourceLinkEl.textContent = String(uiCol.source);
       if (uiCol.sourceLink) sourceLinkEl.setAttribute("href", String(uiCol.sourceLink));
     }
-
-    const img = document.querySelector("#collectionArt img");
-    if (img) {
-      const title = String(uiCol.title || fixed.title || fixed.id);
-      img.setAttribute("alt", title);
-      setImgWithFallback(img, uiCol.mainArt, { element: uiCol.element || "", title });
-    }
   }
 
   const meta = (fixed.cardIds || []).map((cardId, idx) => {
@@ -343,6 +336,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     return null;
   });
+
+  const img = document.querySelector("#collectionArt img");
+  if (img) {
+    const title = String(uiCol?.title || fixed.title || fixed.id);
+    const fromCollectionCards = (meta || []).find((m) => m && String(m.art || "").trim())?.art || "";
+    const preferredArt = fromCollectionCards || uiCol?.mainArt || "";
+    img.setAttribute("alt", title);
+    setImgWithFallback(img, preferredArt, { element: uiCol?.element || "", title });
+  }
 
   const cardIds = fixed.cardIds || [];
   const foundFlags = cardIds.map((cardId, idx) => {
