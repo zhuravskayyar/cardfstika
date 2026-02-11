@@ -36,6 +36,10 @@ function qs(name) {
   return new URLSearchParams(location.search).get(name);
 }
 
+function normalizeLooseCollectionId(raw) {
+  return String(raw || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = String(value);
@@ -186,8 +190,8 @@ function renderGrid(collectionId, cardIds, isFoundAtIndex, cardMeta = []) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const id = qs("id");
-  if (!id) return;
+  const requestedId = qs("id");
+  if (!requestedId) return;
 
   let collectionsFixed;
   let cardsBase;
@@ -216,10 +220,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  const fixed = collectionsFixed.find((c) => c && c.id === id);
+  let collectionId = requestedId;
+  let fixed = collectionsFixed.find((c) => c && c.id === collectionId);
   if (!fixed) {
-    console.warn("[collection-open] collection not found:", id);
-    setTitle(id);
+    const requestedLoose = normalizeLooseCollectionId(requestedId);
+    if (requestedLoose) {
+      fixed = collectionsFixed.find((c) => normalizeLooseCollectionId(c?.id) === requestedLoose) || null;
+      if (fixed?.id) collectionId = String(fixed.id);
+    }
+  }
+
+  if (!fixed) {
+    console.warn("[collection-open] collection not found:", requestedId);
+    setTitle(requestedId);
     return;
   }
 
@@ -248,8 +261,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   setTitle(fixed.title || fixed.id);
 
   // Optional extra UI data (if present for this collection)
-  const colExtra = openData?.collections?.[id] || null;
-  const colRich = Array.isArray(collectionsRich) ? collectionsRich.find((c) => c && c.id === id) : null;
+  const colExtra = openData?.collections?.[collectionId] || null;
+  const colRich = Array.isArray(collectionsRich) ? collectionsRich.find((c) => c && c.id === collectionId) : null;
   const extraCardsById = new Map(
     (Array.isArray(colExtra?.cards) ? colExtra.cards : [])
       .filter(Boolean)
@@ -366,5 +379,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   setText("collectionFound", foundFlags.filter(Boolean).length);
   setText("collectionTotal", cardIds.length);
 
-  renderGrid(id, cardIds, (idx) => !!foundFlags[idx], meta);
+  renderGrid(collectionId, cardIds, (idx) => !!foundFlags[idx], meta);
 });

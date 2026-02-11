@@ -176,8 +176,8 @@
       "artFile": "air_004.webp"
     },
     {
-      "id": "elem_tide_drop",
-      "title": "Ундін",
+      "id": "sea_undine_oracle",
+      "title": "Ундіна Морська",
       "element": "water",
       "basePower": 15,
       "rarity": "rare",
@@ -249,7 +249,7 @@
     },
     {
       "id": "war_drums",
-      "title": "Гоблін",
+      "title": "Гоблін-Розвідник",
       "element": "fire",
       "basePower": 11,
       "rarity": "common",
@@ -837,7 +837,7 @@
     },
     {
       "id": "feb23_field_medic",
-      "title": "Воїн",
+      "title": "Фронтовик",
       "element": "water",
       "basePower": 12,
       "rarity": "common",
@@ -1329,7 +1329,7 @@
     },
     {
       "id": "urfin_general_pyrestaff",
-      "title": "Борей",
+      "title": "Полярний Генерал",
       "element": "water",
       "basePower": 17,
       "rarity": "epic",
@@ -2109,7 +2109,7 @@
     },
     {
       "id": "voodoo_bone_priest",
-      "title": "Шаман",
+      "title": "Вуду-Шаман",
       "element": "earth",
       "basePower": 14,
       "rarity": "uncommon",
@@ -2169,7 +2169,7 @@
     },
     {
       "id": "holy_shore_tide_monk",
-      "title": "Жриця",
+      "title": "Морська Жриця",
       "element": "water",
       "basePower": 14,
       "rarity": "uncommon",
@@ -2181,7 +2181,7 @@
     },
     {
       "id": "holy_shore_salt_knight",
-      "title": "Кустодій",
+      "title": "Пляжник",
       "element": "earth",
       "basePower": 15,
       "rarity": "rare",
@@ -2193,8 +2193,8 @@
     },
     {
       "id": "holy_shore_lighthouse_flame",
-      "title": "Володар",
-      "element": "fire",
+      "title": "Владика Акваторії",
+      "element": "water",
       "basePower": 14,
       "rarity": "uncommon",
       "collections": [
@@ -2325,7 +2325,7 @@
     },
     {
       "id": "west_mischief_dune_runner",
-      "title": "Страж",
+      "title": "Дюнний Страж",
       "element": "earth",
       "basePower": 13,
       "rarity": "common",
@@ -2373,7 +2373,7 @@
     },
     {
       "id": "cat_sky_slink",
-      "title": "Сфінкс",
+      "title": "Кіт Шредінгера",
       "element": "air",
       "basePower": 12,
       "rarity": "common",
@@ -2409,7 +2409,7 @@
     },
     {
       "id": "choice_air_herald",
-      "title": "Борей",
+      "title": "Нот",
       "element": "air",
       "basePower": 15,
       "rarity": "rare",
@@ -2421,7 +2421,7 @@
     },
     {
       "id": "choice_air_vow",
-      "title": "Зефір",
+      "title": "Фавоній",
       "element": "air",
       "basePower": 13,
       "rarity": "common",
@@ -2469,7 +2469,7 @@
     },
     {
       "id": "choice_earth_vow",
-      "title": "Гефест",
+      "title": "Гефест Хтонічний",
       "element": "earth",
       "basePower": 13,
       "rarity": "common",
@@ -2505,7 +2505,7 @@
     },
     {
       "id": "choice_fire_herald",
-      "title": "Гефест",
+      "title": "Гефест-Коваль",
       "element": "fire",
       "basePower": 15,
       "rarity": "rare",
@@ -2517,7 +2517,7 @@
     },
     {
       "id": "choice_fire_vow",
-      "title": "Вулкан",
+      "title": "Вулкан Пламенний",
       "element": "fire",
       "basePower": 13,
       "rarity": "common",
@@ -2565,7 +2565,7 @@
     },
     {
       "id": "choice_water_vow",
-      "title": "Тритон",
+      "title": "Тритон Глашатай",
       "element": "water",
       "basePower": 13,
       "rarity": "common",
@@ -2577,7 +2577,7 @@
     },
     {
       "id": "choice_water_avatar",
-      "title": "Посейдон",
+      "title": "Посейдон Океанічний",
       "element": "water",
       "basePower": 18,
       "rarity": "epic",
@@ -2601,7 +2601,7 @@
     },
     {
       "id": "flame_legion_pyromancer",
-      "title": "Паладин",
+      "title": "Паладин Полум'я",
       "element": "fire",
       "basePower": 14,
       "rarity": "uncommon",
@@ -2637,7 +2637,7 @@
     },
     {
       "id": "storm_breath_rider",
-      "title": "Борей",
+      "title": "Борей Крижаний",
       "element": "air",
       "basePower": 15,
       "rarity": "rare",
@@ -2745,7 +2745,7 @@
     },
     {
       "id": "forge_titan_bellows",
-      "title": "Гефест",
+      "title": "Горновий",
       "element": "air",
       "basePower": 16,
       "rarity": "rare",
@@ -2757,7 +2757,7 @@
     },
     {
       "id": "forge_titan_slag",
-      "title": "Вулкан",
+      "title": "Вулкан Магмовий",
       "element": "fire",
       "basePower": 17,
       "rarity": "epic",
@@ -2793,7 +2793,7 @@
     },
     {
       "id": "drm_basics_breath_focus",
-      "title": "Адепт",
+      "title": "Адепт Дихання",
       "element": "air",
       "basePower": 12,
       "rarity": "common",

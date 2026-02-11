@@ -37,6 +37,10 @@ function slugify(text) {
   return out || "collection";
 }
 
+function normalizeTitleKey(text) {
+  return String(text || "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
 function parseTotalFromCount(text) {
   const s = String(text || "");
   const m = s.match(/(?:з|із)\s*(\d+)/i);
@@ -156,9 +160,20 @@ class CollectionsScreen {
 
   normalizeCollectionCards() {
     const known = new Map((this.collections || []).map((c) => [c.id, c]));
+    const knownIdByTitle = new Map(
+      (this.collections || [])
+        .filter((c) => c && c.id && c.title)
+        .map((c) => [normalizeTitleKey(c.title), c.id]),
+    );
 
     document.querySelectorAll(".collection-card").forEach((card) => {
-      const id = ensureCollectionId(card);
+      const explicit = card.dataset.collectionId?.trim();
+      let id = explicit || "";
+      if (!id) {
+        const title = card.querySelector(".collection-card__title")?.textContent?.trim() || "";
+        id = knownIdByTitle.get(normalizeTitleKey(title)) || slugify(title);
+        card.dataset.collectionId = id;
+      }
       if (!known.has(id)) {
         const title = card.querySelector(".collection-card__title")?.textContent?.trim() || id;
         known.set(id, { id, title, cardIds: [] });

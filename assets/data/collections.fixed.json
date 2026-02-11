@@ -373,10 +373,10 @@
     "id": "svyashchenni-berehy",
     "title": "Священні Береги",
     "cardIds": [
-      "svyashchenni-berehy_01",
-      "svyashchenni-berehy_02",
-      "svyashchenni-berehy_03",
-      "svyashchenni-berehy_04"
+      "holy_shore_pilgrim",
+      "holy_shore_tide_monk",
+      "holy_shore_salt_knight",
+      "holy_shore_lighthouse_flame"
     ]
   },
   {
