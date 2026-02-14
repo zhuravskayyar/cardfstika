@@ -146,6 +146,12 @@ function fmtK(n) {
   return `${v < 0 ? "-" : ""}${cleaned}k`;
 }
 
+function getEventElementTarget(event) {
+  const target = event?.target;
+  if (target instanceof Element) return target;
+  return target?.parentElement || null;
+}
+
 function ensureBotbarLinks(botbar) {
   if (!botbar || botbar.dataset.linksReady === "1") return;
 
@@ -184,7 +190,16 @@ function ensureBotbarLinks(botbar) {
   }
 
   links.querySelectorAll("[data-stub-link]").forEach((a) => {
-    a.addEventListener("click", (e) => e.preventDefault());
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const stub = String(e.currentTarget?.dataset?.stubLink || "").trim();
+      if (stub !== "chat") return;
+
+      window.dispatchEvent(new Event("botbar:chat-open-request"));
+      if (typeof window.Net?.openChat === "function") {
+        window.Net.openChat();
+      }
+    });
   });
 
   const logout = document.getElementById("botbarLogoutLink");
@@ -313,6 +328,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const botbar = document.getElementById("botbar");
   ensureBotbarLinks(botbar);
+
+  // Robust fallback: open chat by delegated click even if per-link handlers were not attached.
+  if (botbar && botbar.dataset.boundChatFallback !== "1") {
+    botbar.dataset.boundChatFallback = "1";
+    botbar.addEventListener("click", (e) => {
+      const target = getEventElementTarget(e);
+      const link = target?.closest('[data-stub-link="chat"]');
+      if (!link) return;
+      e.preventDefault();
+      window.dispatchEvent(new Event("botbar:chat-open-request"));
+      if (typeof window.Net?.openChat === "function") {
+        window.Net.openChat();
+      }
+    }, true);
+  }
+
   const wireBotbarButton = (btn) => {
     if (!btn || btn.dataset.boundNav === "1") return;
     btn.dataset.boundNav = "1";
@@ -326,7 +357,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Primary delegation
   botbar?.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-route]");
+    const target = getEventElementTarget(e);
+    const btn = target?.closest("[data-route]");
     if (!btn) return;
     const routeName = String(btn.dataset.route || "").trim();
     if (!routeName) return;

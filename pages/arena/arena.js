@@ -18,6 +18,10 @@ import {
 // ==========================================
 
 const QUEUE_TIME = 25; // секунди
+const CHAT_SERVER_URL = "https://cardastica-server.onrender.com";
+const CHAT_ROOM_ID = "global";
+const CHAT_MESSAGES_LIMIT = 50;
+const CHAT_PING_INTERVAL_MS = 20_000;
 
 // ==========================================
 // UTILITIES
@@ -94,38 +98,237 @@ function updateArenaUI() {
 // CHAT
 // ==========================================
 
-const DEMO_CHAT_MESSAGES = [
-  { author: 'Спритний маг', text: 'Хто на арену?', time: '14:23' },
-  { author: 'Темний лицар', text: 'Готовий до бою!', time: '14:24' },
-  { author: 'Вогняна відьма', text: 'Удачі всім 🔥', time: '14:25' },
-];
+let chatSocket = null;
+let chatMessages = [];
+let chatPingTimer = null;
 
-function renderChat() {
-  const chatEl = q('#chatMessages');
-  if (!chatEl) return;
-
-  chatEl.innerHTML = DEMO_CHAT_MESSAGES.map(m => `
-    <div class="arena-chat-message">
-      <span class="arena-chat-message__author">${m.author}:</span>
-      <span class="arena-chat-message__text">${m.text}</span>
-      <span class="arena-chat-message__time">${m.time}</span>
-    </div>
-  `).join('');
+function getChatPlayerId() {
+  let id = localStorage.getItem("cardastika:playerId") || localStorage.getItem("playerId");
+  if (!id) {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      id = crypto.randomUUID();
+    } else {
+      id = `p_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    }
+    localStorage.setItem("cardastika:playerId", id);
+    localStorage.setItem("playerId", id);
+  }
+  return id;
 }
 
-function addChatMessage(author, text) {
-  const now = new Date();
-  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  
-  DEMO_CHAT_MESSAGES.push({ author, text, time });
-  if (DEMO_CHAT_MESSAGES.length > 20) {
-    DEMO_CHAT_MESSAGES.shift();
+function getChatPlayerName() {
+  const fromStorage = String(localStorage.getItem("playerName") || "").trim();
+  if (fromStorage) return fromStorage.slice(0, 48);
+
+  const acc = window.AccountSystem?.getActive?.();
+  const fromAccount = String(acc?.name || "").trim();
+  return (fromAccount || "Player").slice(0, 48);
+}
+
+function getChatDeckPower() {
+  const acc = window.AccountSystem?.getActive?.();
+  const fromAccDeck = Array.isArray(acc?.deck)
+    ? acc.deck.reduce((sum, card) => sum + Number(card?.power ?? card?.basePower ?? 0), 0)
+    : NaN;
+
+  if (Number.isFinite(fromAccDeck) && fromAccDeck > 0) {
+    return Math.round(fromAccDeck);
   }
-  
-  renderChat();
-  
-  const chatEl = q('#chatMessages');
-  if (chatEl) chatEl.scrollTop = chatEl.scrollHeight;
+
+  const deckFromStorage = safeJSON(localStorage.getItem("cardastika:deck"));
+  const fromStorageDeck = Array.isArray(deckFromStorage)
+    ? deckFromStorage.reduce((sum, card) => sum + Number(card?.power ?? card?.basePower ?? 0), 0)
+    : NaN;
+
+  if (Number.isFinite(fromStorageDeck) && fromStorageDeck > 0) {
+    return Math.round(fromStorageDeck);
+  }
+
+  const fallback = Number(localStorage.getItem("deckPower") || 0);
+  return Number.isFinite(fallback) ? Math.max(0, Math.round(fallback)) : 0;
+}
+
+function getChatLeague() {
+  const raw = localStorage.getItem("league") || localStorage.getItem("cardastika:league") || "";
+  return String(raw).trim();
+}
+
+function escapeHtml(value) {
+  return String(value || "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[ch]));
+}
+
+function setOnlineCount(value) {
+  const el = q("#onlineCount");
+  if (!el) return;
+
+  const n = Number(value);
+  el.textContent = Number.isFinite(n) ? String(Math.max(0, Math.round(n))) : "0";
+}
+
+function renderChatMessages() {
+  const chatLog = q("#chatLog");
+  if (!chatLog) return;
+
+  const rows = chatMessages.slice(-CHAT_MESSAGES_LIMIT);
+  if (!rows.length) {
+    chatLog.innerHTML = '<div class="ccg-chat__empty">Поки що тиша в чаті.</div>';
+    return;
+  }
+
+  chatLog.innerHTML = rows.map((m) => {
+    const ts = Number(m?.ts);
+    const time = Number.isFinite(ts)
+      ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "--:--";
+    return `
+      <div class="ccg-chat__msg">
+        <div class="ccg-chat__name">${escapeHtml(m?.name || "Player")}</div>
+        <div class="ccg-chat__text">${escapeHtml(m?.text || "")}</div>
+        <div class="ccg-chat__time">${time}</div>
+      </div>
+    `;
+  }).join("");
+
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function ensureSocketClient() {
+  if (typeof window.io === "function") return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src*="socket.io.min.js"]');
+    if (existing) {
+      const startedAt = Date.now();
+      const timer = setInterval(() => {
+        if (typeof window.io === "function") {
+          clearInterval(timer);
+          resolve();
+          return;
+        }
+
+        if (Date.now() - startedAt > 6000) {
+          clearInterval(timer);
+          reject(new Error("socket.io load timeout"));
+        }
+      }, 60);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.socket.io/4.7.5/socket.io.min.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = (err) => reject(err);
+    document.head.appendChild(script);
+  });
+}
+
+function bindChatSocket() {
+  if (!chatSocket || chatSocket.__arenaChatBound === true) return;
+  chatSocket.__arenaChatBound = true;
+
+  chatSocket.on("connect", () => {
+    const playerId = getChatPlayerId();
+    const name = getChatPlayerName();
+
+    chatSocket.emit("presence:hello", {
+      playerId,
+      name,
+      power: getChatDeckPower(),
+      league: getChatLeague(),
+      profile: { name, level: 1, avatar: "" }
+    });
+
+    if (chatPingTimer) {
+      clearInterval(chatPingTimer);
+    }
+    chatPingTimer = setInterval(() => {
+      chatSocket?.emit("presence:ping", { playerId });
+    }, CHAT_PING_INTERVAL_MS);
+
+    chatSocket.emit("chat:join", { roomId: CHAT_ROOM_ID });
+  });
+
+  chatSocket.on("disconnect", () => {
+    if (chatPingTimer) {
+      clearInterval(chatPingTimer);
+      chatPingTimer = null;
+    }
+  });
+
+  chatSocket.on("presence:update", (snapshot) => {
+    setOnlineCount(snapshot?.count ?? 0);
+  });
+
+  chatSocket.on("chat:history", (history) => {
+    chatMessages = Array.isArray(history) ? history.slice(-CHAT_MESSAGES_LIMIT) : [];
+    renderChatMessages();
+  });
+
+  chatSocket.on("chat:msg", (msg) => {
+    if (!msg || !String(msg.text || "").trim()) return;
+    chatMessages.push(msg);
+    if (chatMessages.length > CHAT_MESSAGES_LIMIT) {
+      chatMessages = chatMessages.slice(-CHAT_MESSAGES_LIMIT);
+    }
+    renderChatMessages();
+  });
+}
+
+function sendChatMessage() {
+  const input = q("#chatInput");
+  if (!input || !chatSocket || !chatSocket.connected) return;
+
+  const text = String(input.value || "").trim();
+  if (!text) return;
+
+  chatSocket.emit("chat:msg", {
+    roomId: CHAT_ROOM_ID,
+    playerId: getChatPlayerId(),
+    text: text.slice(0, 240)
+  });
+
+  input.value = "";
+}
+
+function initArenaChat() {
+  const chatForm = q("#chatForm");
+  if (!chatForm) return;
+
+  renderChatMessages();
+  setOnlineCount(0);
+
+  chatForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    sendChatMessage();
+  });
+
+  ensureSocketClient()
+    .then(() => {
+      if (chatSocket) return;
+      chatSocket = window.io(CHAT_SERVER_URL, { transports: ["websocket", "polling"] });
+      bindChatSocket();
+    })
+    .catch((err) => {
+      console.warn("[arena-chat] socket init failed", err);
+    });
+
+  window.addEventListener("beforeunload", () => {
+    if (chatPingTimer) {
+      clearInterval(chatPingTimer);
+      chatPingTimer = null;
+    }
+    if (chatSocket) {
+      chatSocket.disconnect();
+      chatSocket = null;
+    }
+  }, { once: true });
 }
 
 // ==========================================
@@ -179,28 +382,11 @@ function setupEventListeners() {
   q('#refreshBtn')?.addEventListener('click', () => {
     updateHUD();
     updateArenaUI();
-    renderChat();
+    renderChatMessages();
+    if (chatSocket?.connected) {
+      chatSocket.emit("chat:join", { roomId: CHAT_ROOM_ID });
+    }
   });
-  
-  // Чат
-  q('#chatSendBtn')?.addEventListener('click', sendChatMessage);
-  q('#chatInput')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendChatMessage();
-  });
-}
-
-function sendChatMessage() {
-  const input = q('#chatInput');
-  if (!input) return;
-  
-  const text = input.value.trim();
-  if (!text) return;
-  
-  const acc = window.AccountSystem?.getActive?.();
-  const author = acc?.name || 'Гравець';
-  
-  addChatMessage(author, text);
-  input.value = '';
 }
 
 // ==========================================
@@ -400,7 +586,7 @@ function init() {
   updateHUD();
   updateArenaUI();
   updateArenaLeagueUI();
-  renderChat();
+  initArenaChat();
   setupEventListeners();
 }
 

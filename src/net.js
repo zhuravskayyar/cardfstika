@@ -7,6 +7,8 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
   const PING_INTERVAL_MS = 20_000;
   const REST_REFRESH_MS = 30_000;
   const LIST_LIMIT = 200;
+  const CHAT_ROOM_ID = "global";
+  const CHAT_LIMIT = 50;
   const AVATAR_PATH_RE = /^(?:\.\/|\.\.\/\.\.\/|\/)?assets\/cards\/arts\/[\w.-]+\.(?:webp|png|jpe?g|avif)$/i;
 
   const IDS = {
@@ -16,7 +18,12 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     list: "onlinePresenceList",
     search: "onlinePresenceSearch",
     stat: "onlinePresenceStat",
-    profileModal: "onlineProfileModal"
+    profileModal: "onlineProfileModal",
+    chatModal: "globalChatModal",
+    chatLog: "globalChatLog",
+    chatForm: "globalChatForm",
+    chatInput: "globalChatInput",
+    chatStatus: "globalChatStatus"
   };
 
   function assetPrefix() {
@@ -32,11 +39,23 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     uncommon: "#7ddf7d",
     common: "#d6d6d6"
   };
+  const CARD_ELEMENTS = new Set(["fire", "water", "earth", "air"]);
+  const RARITY_TO_CLASS = {
+    common: "rarity-1",
+    uncommon: "rarity-2",
+    rare: "rarity-3",
+    epic: "rarity-4",
+    legendary: "rarity-5",
+    mythic: "rarity-6"
+  };
 
   let socket = null;
   let pingInterval = null;
   let restInterval = null;
   let latestSnapshot = { count: 0, list: [] };
+  let latestChatMessages = [];
+  let chatJoinPending = false;
+  let chatTriggersBound = false;
   let escHandler = null;
   let apiBase = "";
 
@@ -174,6 +193,50 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     const safe = sanitizeAvatarValue(value);
     const next = safe || fallback;
     return toAbsoluteUrl(next, DEFAULT_AVATAR);
+  }
+
+  function normalizeCardElement(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (raw === "wind") return "air";
+    if (CARD_ELEMENTS.has(raw)) return raw;
+    return "earth";
+  }
+
+  function normalizeCardId(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    return raw.replace(/[^\w.-]/g, "");
+  }
+
+  function rarityClassFromValue(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (/^rarity-[1-6]$/.test(raw)) return raw;
+    if (RARITY_TO_CLASS[raw]) return RARITY_TO_CLASS[raw];
+
+    const n = Number(raw);
+    if (Number.isFinite(n)) {
+      return `rarity-${Math.max(1, Math.min(6, Math.round(n)))}`;
+    }
+
+    return "rarity-1";
+  }
+
+  function cardArtFallbackUrl(cardLike) {
+    const element = normalizeCardElement(cardLike?.element);
+    return toAbsoluteUrl(`${assetPrefix()}assets/cards/arts/${element}_001.webp`, DEFAULT_AVATAR);
+  }
+
+  function toCardArtUrl(cardLike) {
+    const card = cardLike && typeof cardLike === "object" ? cardLike : {};
+    const direct = sanitizeAvatarValue(card?.art ?? card?.image ?? card?.img ?? card?.avatar);
+    if (direct) return toAbsoluteUrl(direct, cardArtFallbackUrl(card));
+
+    const id = normalizeCardId(card?.id ?? card?.cardId ?? card?.card_id);
+    if (id) {
+      return toAbsoluteUrl(`${assetPrefix()}assets/cards/arts/${id}.webp`, cardArtFallbackUrl(card));
+    }
+
+    return cardArtFallbackUrl(card);
   }
 
   function installAvatarFallback(img, fallbackUrl = DEFAULT_AVATAR) {
@@ -462,25 +525,78 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
-.online-profile__card-item{
-  border: 1px solid rgba(171, 128, 66, 0.42);
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(0,0,0,0.25);
+.online-profile__card-slot{
+  display: grid;
+  gap: 4px;
 }
-.online-profile__card-art{
+.online-profile__deck-card.ref-card{
   width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  display: block;
-  background: rgba(0,0,0,0.38);
+  aspect-ratio: 5 / 6;
+  min-height: 122px;
+  border-radius: 10px;
+  cursor: default;
+}
+.online-profile__deck-card.ref-card::before{
+  inset: 4px;
+  border-radius: 8px;
+}
+.online-profile__deck-card.ref-card::after{
+  border-radius: 10px;
+}
+.online-profile__deck-card.ref-card:hover{
+  transform: none;
+}
+.online-profile__deck-card .ref-card__top{
+  height: 20px;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  padding: 0 6px;
+  border-radius: 0;
+  background: linear-gradient(180deg, rgba(245,240,225,0.96), rgba(225,215,190,0.92));
+  z-index: 4;
+}
+.online-profile__deck-card.elem-fire .ref-card__top{
+  background: linear-gradient(180deg, rgba(255,245,235,0.96), rgba(255,205,195,0.92));
+}
+.online-profile__deck-card.elem-water .ref-card__top{
+  background: linear-gradient(180deg, rgba(240,250,255,0.96), rgba(190,220,255,0.92));
+}
+.online-profile__deck-card.elem-earth .ref-card__top{
+  background: linear-gradient(180deg, rgba(245,255,245,0.96), rgba(190,235,200,0.92));
+}
+.online-profile__deck-card.elem-air .ref-card__top{
+  background: linear-gradient(180deg, rgba(255,252,240,0.96), rgba(245,220,150,0.92));
+}
+.online-profile__deck-card .ref-card__type{
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+.online-profile__deck-card .ref-card__power{
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 900;
+}
+.online-profile__deck-card .ref-card__art{
+  top: 20px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 -18px 24px rgba(0,0,0,.55);
 }
 .online-profile__card-meta{
-  padding: 5px 6px 6px;
+  padding: 0 2px;
 }
 .online-profile__card-name{
   font-size: 12px;
-  color: #d8eeff;
+  color: #f4e4c6;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -488,6 +604,181 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
 .online-profile__card-power{
   font-size: 12px;
   margin-top: 2px;
+  color: #f0d3a5;
+  font-weight: 700;
+}
+
+#${IDS.chatModal}{
+  position: fixed;
+  inset: 0;
+  z-index: 1620;
+  background: rgba(15, 9, 4, 0.9);
+  display: grid;
+  place-items: center;
+  padding: 10px;
+}
+.global-chat{
+  width: min(385px, 100%);
+  height: min(78vh, 700px);
+  max-height: 760px;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  border: 1px solid rgba(181, 139, 72, 0.78);
+  border-radius: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 120% at 50% -15%, rgba(177, 127, 56, 0.2), transparent 58%),
+    linear-gradient(180deg, rgba(31, 19, 9, 0.98), rgba(12, 7, 3, 0.98));
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.72),
+    inset 0 0 0 1px rgba(132, 92, 38, 0.7);
+}
+.global-chat__head{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  min-height: 32px;
+  background: linear-gradient(180deg, #7a5328, #4d2e13);
+  border-bottom: 1px solid rgba(39, 23, 9, 0.95);
+  box-shadow: inset 0 -1px 0 rgba(204, 157, 84, 0.46);
+}
+.global-chat__title{
+  margin: 0;
+  text-align: center;
+  font: 500 17px/1 "EB Garamond", serif;
+  color: #f4dcae;
+  letter-spacing: 0.02em;
+}
+.global-chat__close{
+  appearance: none;
+  border: 0;
+  height: 100%;
+  min-width: 38px;
+  background: linear-gradient(180deg, rgba(105, 65, 27, 0.98), rgba(69, 41, 16, 0.98));
+  color: #f5e3bf;
+  font-size: 20px;
+  cursor: pointer;
+}
+.global-chat__close:hover{
+  filter: brightness(1.12);
+}
+.global-chat__tools{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(133, 98, 52, 0.62);
+  background: rgba(28, 17, 8, 0.98);
+}
+.global-chat__refresh{
+  appearance: none;
+  border: 1px solid rgba(181, 139, 72, 0.78);
+  border-radius: 4px;
+  background: rgba(58, 35, 14, 0.95);
+  color: #f0cf90;
+  font: 700 12px/1 "Segoe UI", Arial, sans-serif;
+  padding: 4px 9px;
+  cursor: pointer;
+}
+.global-chat__refresh:hover{
+  background: rgba(77, 47, 20, 0.98);
+}
+.global-chat__status{
+  margin-left: auto;
+  color: rgba(233, 200, 138, 0.92);
+  font: 700 12px/1 "Segoe UI", Arial, sans-serif;
+}
+.global-chat__log{
+  background:
+    radial-gradient(80% 120% at 90% 0, rgba(121, 84, 42, 0.2), transparent 70%),
+    #120b05;
+  overflow: auto;
+  padding: 0;
+}
+.global-chat__empty{
+  padding: 24px 12px;
+  text-align: center;
+  color: rgba(216, 189, 142, 0.85);
+  font: 500 13px/1.4 "Segoe UI", Arial, sans-serif;
+}
+.global-chat__msg{
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 7px 8px;
+  border-bottom: 1px solid rgba(115, 83, 43, 0.58);
+}
+.global-chat__msg:hover{
+  background: rgba(96, 68, 34, 0.35);
+}
+.global-chat__avatar{
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid rgba(163, 118, 59, 0.7);
+  background: rgba(0, 0, 0, 0.5);
+}
+.global-chat__body{
+  min-width: 0;
+}
+.global-chat__meta{
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.global-chat__name{
+  color: #f0d39f;
+  font: 700 13px/1.2 "Segoe UI", Arial, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+.global-chat__time{
+  margin-left: auto;
+  color: rgba(191, 164, 122, 0.88);
+  font: 500 12px/1.2 "Segoe UI", Arial, sans-serif;
+  white-space: nowrap;
+}
+.global-chat__text{
+  margin-top: 2px;
+  color: #f8ead0;
+  font: 500 15px/1.25 "Segoe UI", Arial, sans-serif;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.global-chat__bar{
+  display: grid;
+  grid-template-columns: 1fr 38px;
+  gap: 0;
+  border-top: 1px solid rgba(136, 99, 52, 0.72);
+  background: rgba(24, 14, 7, 0.98);
+  padding: 6px 6px 8px;
+}
+.global-chat__input{
+  height: 32px;
+  border: 1px solid rgba(170, 124, 62, 0.8);
+  border-right: 0;
+  background: #f0e1c5;
+  color: #2d1b0b;
+  padding: 0 8px;
+  font: 600 13px/1 "Segoe UI", Arial, sans-serif;
+  outline: none;
+}
+.global-chat__send{
+  appearance: none;
+  border: 1px solid rgba(183, 140, 72, 0.88);
+  background: linear-gradient(180deg, rgba(108, 71, 32, 0.95), rgba(70, 43, 17, 0.98));
+  color: #ffe9be;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+.global-chat__send:hover{
+  filter: brightness(1.14);
 }
 @media (max-width: 540px){
   .online-row{
@@ -502,7 +793,17 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     grid-template-columns: 1fr;
   }
   .online-profile__cards{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .global-chat{
+    width: min(390px, 100%);
+    height: min(82vh, 760px);
+  }
+  .global-chat__name{
+    max-width: 180px;
+  }
+  .global-chat__text{
+    font-size: 14px;
   }
 }
 `;
@@ -515,6 +816,7 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     el.dataset.boundOnline = "1";
     el.addEventListener("click", (ev) => {
       ev.preventDefault();
+      if (document.getElementById(IDS.chatModal)) closeGlobalChatModal();
       if (document.getElementById(IDS.modal)) closeOnlineModal();
       else openOnlineModal();
     });
@@ -623,26 +925,20 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     return leagueLS ? String(leagueLS) : "-";
   }
 
-  function cardArt(card) {
-    if (!card || typeof card !== "object") return DEFAULT_AVATAR;
-    const direct = String(card.art || card.image || card.img || "").trim();
-    if (direct) return direct;
-    const id = String(card.id || "").trim();
-    if (id) return `assets/cards/arts/${id}.webp`;
-    return DEFAULT_AVATAR;
-  }
-
   function normalizeCardPreview(card) {
     const power = Number(card?.power ?? card?.basePower ?? 0);
     const level = Number(card?.level ?? 0);
     const rarity = String(card?.rarity ?? card?.quality ?? "").toLowerCase().trim();
+    const element = normalizeCardElement(card?.element);
     return {
-      title: String(card?.title || card?.name || "Карта"),
+      id: normalizeCardId(card?.id ?? card?.cardId ?? card?.card_id),
+      title: String(card?.title || card?.name || "\u041A\u0430\u0440\u0442\u0430"),
       power: Number.isFinite(power) ? Math.max(0, Math.round(power)) : 0,
       level: Number.isFinite(level) ? Math.max(0, Math.round(level)) : 0,
       rarity,
-      element: String(card?.element || "").toLowerCase(),
-      art: toAbsoluteUrl(cardArt(card), DEFAULT_AVATAR)
+      rarityClass: rarityClassFromValue(rarity),
+      element,
+      art: toCardArtUrl(card)
     };
   }
 
@@ -746,6 +1042,12 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     return `${hr} год тому`;
   }
 
+  function getEventElementTarget(event) {
+    const target = event?.target;
+    if (target instanceof Element) return target;
+    return target?.parentElement || null;
+  }
+
   function normalizeSnapshot(snapshotLike) {
     const src = snapshotLike && typeof snapshotLike === "object" ? snapshotLike : {};
     const rawList = Array.isArray(src.list) ? src.list : [];
@@ -792,6 +1094,202 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     return input ? String(input.value || "") : "";
   }
 
+  function normalizeChatMessages(historyLike) {
+    if (!Array.isArray(historyLike)) return [];
+
+    const rows = [];
+    for (const row of historyLike) {
+      const text = String(row?.text || "").trim().slice(0, 240);
+      if (!text) continue;
+      const tsRaw = Number(row?.ts);
+      rows.push({
+        name: String(row?.name || "Гравець").trim().slice(0, 48) || "Гравець",
+        text,
+        ts: Number.isFinite(tsRaw) && tsRaw > 0 ? tsRaw : Date.now()
+      });
+    }
+    return rows.slice(-CHAT_LIMIT);
+  }
+
+  function findAvatarByChatName(name) {
+    const target = String(name || "").trim().toLowerCase();
+    if (!target) return toAvatarUrl(DEFAULT_AVATAR, DEFAULT_AVATAR);
+
+    const row = latestSnapshot.list.find((p) => String(p?.name || "").trim().toLowerCase() === target);
+    return toAvatarUrl(row?.avatar || DEFAULT_AVATAR, DEFAULT_AVATAR);
+  }
+
+  function formatChatAgo(ts) {
+    const n = Number(ts);
+    if (!Number.isFinite(n) || n <= 0) return "-";
+
+    const diffSec = Math.max(0, Math.floor((Date.now() - n) / 1000));
+    if (diffSec < 15) return "щойно";
+    if (diffSec < 60) return `${diffSec} с тому`;
+    const min = Math.floor(diffSec / 60);
+    if (min < 60) return `${min} хв тому`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr} год тому`;
+    const d = new Date(n);
+    return `${d.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit" })} ${d.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" })}`;
+  }
+
+  function updateChatStatusLabel() {
+    const status = document.getElementById(IDS.chatStatus);
+    if (!status) return;
+
+    const online = Number.isFinite(Number(latestSnapshot.count))
+      ? Math.max(0, Math.round(Number(latestSnapshot.count)))
+      : 0;
+    status.textContent = socket?.connected ? `Онлайн: ${online}` : "Підключення...";
+  }
+
+  function renderGlobalChat() {
+    const logEl = document.getElementById(IDS.chatLog);
+    if (!logEl) return;
+
+    const stickToBottom = logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - 42;
+    if (!latestChatMessages.length) {
+      logEl.innerHTML = '<div class="global-chat__empty">Повідомлень поки нема.</div>';
+      return;
+    }
+
+    logEl.innerHTML = latestChatMessages.map((msg) => {
+      const name = escapeHtml(msg?.name || "Гравець");
+      const text = escapeHtml(msg?.text || "");
+      const time = escapeHtml(formatChatAgo(msg?.ts));
+      const avatar = escapeHtml(findAvatarByChatName(msg?.name));
+      return `
+<div class="global-chat__msg">
+  <img class="global-chat__avatar" src="${avatar}" alt="${name}">
+  <div class="global-chat__body">
+    <div class="global-chat__meta">
+      <span class="global-chat__name">${name}</span>
+      <span class="global-chat__time">${time}</span>
+    </div>
+    <div class="global-chat__text">${text}</div>
+  </div>
+</div>`;
+    }).join("");
+
+    logEl.querySelectorAll(".global-chat__avatar").forEach((img) => installAvatarFallback(img, DEFAULT_AVATAR));
+    if (stickToBottom) logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function joinGlobalChat(force = false) {
+    if (!socket) {
+      chatJoinPending = true;
+      if (force) updateChatStatusLabel();
+      return;
+    }
+    if (!socket.connected) {
+      chatJoinPending = true;
+      if (force) updateChatStatusLabel();
+      return;
+    }
+
+    chatJoinPending = false;
+    socket.emit("chat:join", { roomId: CHAT_ROOM_ID });
+    if (force) updateChatStatusLabel();
+  }
+
+  function sendGlobalChatMessage() {
+    const input = document.getElementById(IDS.chatInput);
+    if (!input) return;
+
+    const text = String(input.value || "").trim().slice(0, 240);
+    if (!text) return;
+
+    if (!socket || !socket.connected) {
+      joinGlobalChat(true);
+      return;
+    }
+
+    socket.emit("chat:msg", {
+      roomId: CHAT_ROOM_ID,
+      playerId: getPlayerId(),
+      text
+    });
+    input.value = "";
+  }
+
+  function closeGlobalChatModal() {
+    const modal = document.getElementById(IDS.chatModal);
+    if (modal) modal.remove();
+  }
+
+  function bindGlobalChatTriggers() {
+    if (chatTriggersBound) return;
+    chatTriggersBound = true;
+
+    window.addEventListener("botbar:chat-open-request", () => {
+      openGlobalChatModal();
+    });
+
+    document.addEventListener("click", (ev) => {
+      const target = getEventElementTarget(ev);
+      if (!target) return;
+      const link = target.closest('[data-stub-link="chat"]');
+      if (!link) return;
+
+      ev.preventDefault();
+      openGlobalChatModal();
+    }, true);
+  }
+
+  function openGlobalChatModal() {
+    ensureStyles();
+    if (document.getElementById(IDS.chatModal)) return;
+    if (document.getElementById(IDS.modal)) closeOnlineModal();
+    if (document.getElementById(IDS.profileModal)) closeProfileModal();
+
+    const overlay = document.createElement("section");
+    overlay.id = IDS.chatModal;
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-label", "Загальний чат");
+    overlay.innerHTML = `
+<article class="global-chat">
+  <header class="global-chat__head">
+    <h2 class="global-chat__title">Загальний чат</h2>
+    <button type="button" class="global-chat__close" id="globalChatCloseBtn" aria-label="Закрити">↩</button>
+  </header>
+  <div class="global-chat__tools">
+    <button type="button" class="global-chat__refresh" id="globalChatRefreshBtn">Оновити</button>
+    <span class="global-chat__status" id="${IDS.chatStatus}">Підключення...</span>
+  </div>
+  <div class="global-chat__log" id="${IDS.chatLog}" aria-live="polite"></div>
+  <form class="global-chat__bar" id="${IDS.chatForm}" autocomplete="off">
+    <input class="global-chat__input" id="${IDS.chatInput}" maxlength="240" placeholder="Напишіть повідомлення...">
+    <button class="global-chat__send" type="submit" aria-label="Надіслати">↪</button>
+  </form>
+</article>`;
+
+    overlay.addEventListener("click", (ev) => {
+      if (ev.target === overlay) closeGlobalChatModal();
+    });
+    document.body.appendChild(overlay);
+
+    document.getElementById("globalChatCloseBtn")?.addEventListener("click", closeGlobalChatModal);
+    document.getElementById("globalChatRefreshBtn")?.addEventListener("click", () => joinGlobalChat(true));
+    document.getElementById(IDS.chatForm)?.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      sendGlobalChatMessage();
+    });
+
+    renderGlobalChat();
+    updateChatStatusLabel();
+    joinGlobalChat(true);
+
+    document.getElementById(IDS.chatInput)?.focus();
+  }
+
+  // Expose chat opener as early as possible, independent from socket/API readiness.
+  window.Net = window.Net || {};
+  if (typeof window.Net.openChat !== "function") {
+    window.Net.openChat = openGlobalChatModal;
+  }
+
   async function fetchPlayerProfile(playerId) {
     const id = String(playerId || "").trim();
     if (!id) return null;
@@ -827,28 +1325,38 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
   function renderProfileCards(cards) {
     const rows = Array.isArray(cards) ? cards.slice(0, 3) : [];
     if (!rows.length) {
-      return `<div class="online-profile__panel"><h3 class="online-profile__panel-title">Найсильніші карти</h3><div class="online-empty">Немає даних по картах.</div></div>`;
+      return `<div class="online-profile__panel"><h3 class="online-profile__panel-title">\u041D\u0430\u0439\u0441\u0438\u043B\u044C\u043D\u0456\u0448\u0456 \u043A\u0430\u0440\u0442\u0438</h3><div class="online-empty">\u041D\u0435\u043C\u0430\u0454 \u0434\u0430\u043D\u0438\u0445 \u043F\u043E \u043A\u0430\u0440\u0442\u0430\u0445.</div></div>`;
     }
 
     const items = rows.map((card) => {
-      const title = escapeHtml(card?.title || "Карта");
-      const art = escapeHtml(toAbsoluteUrl(card?.art || DEFAULT_AVATAR, DEFAULT_AVATAR));
+      const title = escapeHtml(card?.title || "\u041A\u0430\u0440\u0442\u0430");
+      const element = normalizeCardElement(card?.element);
+      const rarityClass = rarityClassFromValue(card?.rarityClass || card?.rarity || card?.quality);
+      const artPrimary = escapeHtml(toCardArtUrl(card));
+      const artFallback = escapeHtml(cardArtFallbackUrl(card));
       const power = fmtNum(card?.power || 0);
       const level = Number(card?.level || 0);
       const rarity = String(card?.rarity || "").toLowerCase();
       const color = qualityColor(rarity);
-      const meta = level > 0 ? `${power} | Lvl ${level}` : power;
+      const meta = level > 0 ? `${power} | \u0420\u0456\u0432 ${level}` : power;
       return `
-<div class="online-profile__card-item" style="border-color:${color}66">
-  <img class="online-profile__card-art" src="${art}" alt="${title}">
+<div class="online-profile__card-slot">
+  <div class="online-profile__deck-card ref-card elem-${element} ${rarityClass}" role="img" aria-label="${title}">
+    <span class="ref-card__top">
+      <span class="ref-card__type"></span>
+      <span class="ref-card__power">${power}</span>
+    </span>
+    <span class="ref-card__art" style="background-image:url(${artPrimary}),url(${artFallback}),radial-gradient(120% 90% at 30% 20%, rgba(255,255,255,.08), transparent 55%),radial-gradient(140% 120% at 70% 80%, rgba(0,0,0,.55), transparent 60%),linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.40));"></span>
+    <span class="ref-card__elem"></span>
+  </div>
   <div class="online-profile__card-meta">
     <div class="online-profile__card-name" title="${title}">${title}</div>
-    <div class="online-profile__card-power" style="color:${color}">⚔ ${meta}</div>
+    <div class="online-profile__card-power" style="color:${color}">\u2694 ${meta}</div>
   </div>
 </div>`;
     }).join("");
 
-    return `<div class="online-profile__panel"><h3 class="online-profile__panel-title">Найсильніші карти</h3><div class="online-profile__cards">${items}</div></div>`;
+    return `<div class="online-profile__panel"><h3 class="online-profile__panel-title">\u041D\u0430\u0439\u0441\u0438\u043B\u044C\u043D\u0456\u0448\u0456 \u043A\u0430\u0440\u0442\u0438</h3><div class="online-profile__cards">${items}</div></div>`;
   }
 
   function profileFromFallback(playerRow) {
@@ -1025,7 +1533,7 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
   <div>
     <div class="online-row__name">${name}</div>
   </div>
-  <div class="online-row__power">⚔ ${power}</div>
+  <div class="online-row__power">? ${power}</div>
 </button>`;
     }).join("");
 
@@ -1119,6 +1627,10 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     if (document.getElementById(IDS.modal)) {
       renderList(currentSearch());
     }
+    if (document.getElementById(IDS.chatModal)) {
+      renderGlobalChat();
+      updateChatStatusLabel();
+    }
   }
 
   async function refreshViaRest() {
@@ -1161,9 +1673,11 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     window.Net.getPlayerId = getPlayerId;
     window.Net.getName = getName;
     window.Net.openOnline = openOnlineModal;
+    window.Net.openChat = openGlobalChatModal;
   }
 
   async function init() {
+    bindGlobalChatTriggers();
     ensureOnlineLink();
     updatePresenceUI({ count: 0, list: [] });
 
@@ -1212,6 +1726,10 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
 
     socket.on("connect", () => {
       emitPresenceHello(playerId);
+      updateChatStatusLabel();
+      if (chatJoinPending || document.getElementById(IDS.chatModal)) {
+        joinGlobalChat(true);
+      }
 
       if (pingInterval) clearInterval(pingInterval);
       pingInterval = setInterval(() => {
@@ -1227,11 +1745,25 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
       }
     });
 
+    socket.on("chat:history", (history) => {
+      latestChatMessages = normalizeChatMessages(history);
+      renderGlobalChat();
+      updateChatStatusLabel();
+    });
+
+    socket.on("chat:msg", (message) => {
+      const rows = normalizeChatMessages([message]);
+      if (!rows.length) return;
+      latestChatMessages = [...latestChatMessages, rows[0]].slice(-CHAT_LIMIT);
+      renderGlobalChat();
+    });
+
     socket.on("disconnect", () => {
       if (pingInterval) {
         clearInterval(pingInterval);
         pingInterval = null;
       }
+      updateChatStatusLabel();
     });
 
     exposeApi();
@@ -1243,4 +1775,6 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     setTimeout(init, 0);
   }
 })();
+
+
 

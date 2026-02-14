@@ -115,7 +115,11 @@ function deckPower(deck) {
 function cardArt(card) {
   if (!card || typeof card !== "object") return DEFAULT_AVATAR;
   const direct = String(card.art || card.image || card.img || "").trim();
-  if (direct) return direct;
+  if (direct) {
+    if (direct.startsWith("./assets/")) return direct.slice(2);
+    if (direct.startsWith("/assets/")) return direct.replace(/^\/+/, "");
+    return direct;
+  }
   const id = String(card.id || "").trim();
   if (id) return `assets/cards/arts/${id}.webp`;
   return DEFAULT_AVATAR;
@@ -123,7 +127,8 @@ function cardArt(card) {
 
 function normalizeCardPreview(card) {
   return {
-    title: String(card?.title || card?.name || "Карта"),
+    id: String((card?.id ?? card?.cardId ?? card?.card_id) || "").trim(),
+    title: String(card?.title || card?.name || "\u041A\u0430\u0440\u0442\u0430"),
     power: Math.max(0, asInt(card?.power ?? card?.basePower, 0)),
     level: Math.max(0, asInt(card?.level, 0)),
     rarity: String(card?.rarity ?? card?.quality ?? "").toLowerCase().trim(),

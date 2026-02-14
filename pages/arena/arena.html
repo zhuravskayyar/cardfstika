@@ -86,15 +86,18 @@
 
       <!-- Чат арени -->
       <div class="arena-chat-section">
-        <div class="arena-chat-header">
-          <span class="arena-chat-title">Чат арени</span>
-        </div>
-        <div class="arena-chat-messages" id="chatMessages">
-          <!-- Повідомлення чату -->
-        </div>
-        <div class="arena-chat-input">
-          <input type="text" id="chatInput" placeholder="Написати повідомлення..." maxlength="200">
-          <button class="arena-chat-send" id="chatSendBtn">➤</button>
+        <div class="ccg-chat" id="ccgChat">
+          <div class="ccg-chat__head">
+            <div class="ccg-chat__title">Чат</div>
+            <div class="ccg-chat__meta">Online: <b id="onlineCount">0</b></div>
+          </div>
+
+          <div class="ccg-chat__log" id="chatLog" aria-live="polite"></div>
+
+          <form class="ccg-chat__bar" id="chatForm" autocomplete="off">
+            <input class="ccg-chat__input" id="chatInput" maxlength="240" placeholder="Напиши повідомлення..." />
+            <button class="ccg-chat__send" type="submit">➤</button>
+          </form>
         </div>
       </div>
 
@@ -124,6 +127,7 @@
 
   </div>
 
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script type="module" defer src="../../src/ui-shell.js"></script>
   <script type="module" defer src="arena.js"></script>
 </body>
