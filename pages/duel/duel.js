@@ -4,6 +4,7 @@ import "../../src/account.js";
 import "../../src/progression-system.js";
 import { getDuelLeagueIconPath } from "../../src/core/leagues.js";
 import { applyItemsToDeckAndHp } from "../../src/core/equipment-system.js";
+import { DailyTasksSystem } from "../../src/daily-tasks-system.js";
 import {
   getCollectionBattleBonuses,
   applyCollectionBonusesToDeck,
@@ -411,7 +412,8 @@ async function initDuel() {
   battleDeck = applyCollectionBonusesToDeck(battleDeck, collectionBonuses);
 
   const itemHpBonus = Math.max(0, Math.round(Number(deckWithEquipment?.profile?.hpBonus || 0)));
-  let finalPower = calcDeckPower(battleDeck) + itemHpBonus;
+  const dragonHpBonus = Math.max(0, Number(DailyTasksSystem.getDragonHpBonus() || 0));
+  let finalPower = calcDeckPower(battleDeck) + itemHpBonus + dragonHpBonus;
   finalPower = applyCollectionBonusesToHp(finalPower, collectionBonuses, { mode: "duel" });
   finalPower = Math.max(0, Math.round(Number(finalPower || 0)));
   

@@ -1,0 +1,71 @@
+.daily-login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(4, 8, 14, 0.72);
+}
+
+.daily-login-card {
+  width: min(520px, 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(184, 148, 70, 0.42);
+  background:
+    radial-gradient(120% 120% at 20% 0%, rgba(255, 255, 255, 0.08), transparent 56%),
+    linear-gradient(180deg, rgba(24, 38, 54, 0.96), rgba(10, 20, 34, 0.98));
+  box-shadow:
+    0 24px 42px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 16px;
+}
+
+.daily-login-title {
+  margin: 0;
+  color: #f2d08a;
+  font-size: 30px;
+  line-height: 1.05;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.65);
+}
+
+.daily-login-text {
+  margin: 8px 0 0;
+  color: rgba(240, 248, 255, 0.92);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.daily-login-rewards {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.daily-login-reward {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.24);
+  color: #e6effb;
+  font-weight: 700;
+}
+
+.daily-login-reward img {
+  width: 18px;
+  height: 18px;
+}
+
+.daily-login-actions {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.daily-login-actions .task-btn {
+  width: 100%;
+}
+

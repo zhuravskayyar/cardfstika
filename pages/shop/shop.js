@@ -2,6 +2,7 @@
 import { CARD_BELONGS_TO, decorateCard, ensureCardCatalogLoaded } from "../../src/core/card.js";
 import { buildFoundSet } from "../../src/collections-core.js";
 import { emitCampaignEvent } from "../../src/campaign/campaign-events.js";
+import { DailyTasksSystem } from "../../src/daily-tasks-system.js";
 
 const STORAGE = {
   payCurrency: "cardastika:shop:payCurrency",
@@ -214,22 +215,6 @@ function randomInt(min, max) {
 function pickRandom(arr) {
   if (!Array.isArray(arr) || arr.length === 0) return null;
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// Helper to update task progress in localStorage
-function updateTaskProgress(taskId, increment = 1) {
-  const PROGRESS_KEY = "cardastika:tasks:progress";
-  let progress = {};
-  try {
-    progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
-  } catch {
-    progress = {};
-  }
-  const cur = Math.max(0, Number(progress[taskId] ?? 0));
-  progress[taskId] = cur + increment;
-  try {
-    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-  } catch { /* ignore */ }
 }
 
 function normalizeElement(raw) {
@@ -890,7 +875,7 @@ async function main() {
 
       const equipRes = applyPurchaseToAccount({ spend: spendRes.spend, card });
       // Update task progress for buying cards
-      updateTaskProgress("t_buy_cards_5", 1);
+      DailyTasksSystem.recordCardsBought(1);
       try { emitCampaignEvent("shop_purchase", { count: 1 }); } catch { /* ignore */ }
 
       const q = String(tier.quality || offer.base.quality || "common");
@@ -1016,7 +1001,7 @@ async function main() {
 
       showToast(`Отримано: ${cards.length} карт • ${bundle.title}`);
       // Update task progress for buying cards (multiple from bundle)
-      updateTaskProgress("t_buy_cards_5", cards.length);
+      DailyTasksSystem.recordCardsBought(cards.length);
       try { emitCampaignEvent("shop_purchase", { count: cards.length }); } catch { /* ignore */ }
 
       try {
@@ -1059,7 +1044,7 @@ async function main() {
 
       showToast(`Получено: ${bundle.count} карт • ${bundle.title}`);
       // Update task progress for buying cards (random bundle)
-      updateTaskProgress("t_buy_cards_5", bundle.count || 1);
+      DailyTasksSystem.recordCardsBought(bundle.count || 1);
       try { emitCampaignEvent("shop_purchase", { count: bundle.count || 1 }); } catch { /* ignore */ }
 
       try {

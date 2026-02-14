@@ -3,22 +3,7 @@ import "../../src/progression-system.js";
 import { getDuelLeagueIconPath } from "../../src/core/leagues.js";
 import { isBossDefeated, loadCampaignState, saveCampaignState, setBossDefeated } from "../../src/campaign/campaign-state.js";
 import { tryDropArenaSource, saveSourceToInventory, formatSourceCardInfo } from "../../src/core/source-cards.js";
-
-// Helper to update task progress in localStorage
-function updateTaskProgress(taskId, increment = 1) {
-  const PROGRESS_KEY = "cardastika:tasks:progress";
-  let progress = {};
-  try {
-    progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
-  } catch {
-    progress = {};
-  }
-  const cur = Math.max(0, Number(progress[taskId] ?? 0));
-  progress[taskId] = cur + increment;
-  try {
-    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-  } catch { /* ignore */ }
-}
+import { DailyTasksSystem } from "../../src/daily-tasks-system.js";
 
 const RESULT_KEY = "cardastika:duelResult";
 const EXTRA_FOUND_KEY = "cardastika:foundExtra";
@@ -359,10 +344,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Update task progress for duels (only when not boss battle)
   if (!isBossBattle && res) {
     // Every duel counts for "play duel" task
-    updateTaskProgress("t_play_duel_30", 1);
+    DailyTasksSystem.recordDuelPlayed(1);
     // Wins count for "win duel" task
     if (res === "win") {
-      updateTaskProgress("t_win_duel_20", 1);
+      DailyTasksSystem.recordDuelWin(1);
     }
   }
 
@@ -566,7 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (trophyCfg?.id) addExtraFoundId(trophyCfg.id);
           
           // Update task progress for getting campaign cards
-          updateTaskProgress("t_campaign_cards_3", 1);
+          DailyTasksSystem.recordCampaignCards(1);
         }
         clearBossLastResult(bossActId);
       } else if (bossActId) {

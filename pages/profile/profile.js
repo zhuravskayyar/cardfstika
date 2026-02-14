@@ -2,11 +2,12 @@ import "../../src/progression-system.js";
 import { getDuelLeagueIconPath, getDuelLeagueByRating } from "../../src/core/leagues.js";
 import { getArenaState, getArenaLeagueByRating, getArenaLeagueIconPath, canAccessArena, ARENA_MIN_DUEL_RATING } from "../../src/core/arena-leagues.js";
 import { emitCampaignEvent } from "../../src/campaign/campaign-events.js";
-
+import { buildAndCachePublicProfileSnapshot } from "../../src/public-profile.js";
 const AUTH_DB_KEY = "cardastika:auth:users";
 const AUTH_ACTIVE_KEY = "cardastika:auth:active";
 const AUTH_REMEMBER_KEY = "cardastika:auth:remember";
 const FIRST_OPEN_KEY = "cardastika:onboarding:seen";
+const AVATAR_ASSET_RE = /^(?:\.\/|\.\.\/\.\.\/|\/)?assets\/cards\/arts\/[\w.-]+\.(?:webp|png|jpe?g|avif)$/i;
 
 function asInt(v, d = 0) {
   const n = Number(v);
@@ -42,6 +43,27 @@ function readFirstNum(keys, fallback = null) {
     if (Number.isFinite(n)) return n;
   }
   return fallback;
+}
+
+function sanitizeAvatarUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  if (AVATAR_ASSET_RE.test(raw)) {
+    if (raw.startsWith("/assets/")) return `../../${raw.replace(/^\/+/, "")}`;
+    return raw;
+  }
+
+  if (raw.startsWith("assets/")) return `../../${raw}`;
+
+  try {
+    const url = new URL(raw, location.href);
+    if (!/^https?:$/i.test(url.protocol)) return "";
+    if (url.origin === location.origin && !/\/assets\/cards\/arts\//i.test(url.pathname)) return "";
+    return url.href;
+  } catch {
+    return "";
+  }
 }
 
 function ensureActiveAccount() {
@@ -419,8 +441,24 @@ function render() {
 
   const avatar = document.getElementById("profAvatar");
   if (avatar) {
-    const src = String(localStorage.getItem("cardastika:avatarUrl") || "").trim();
-    if (src) avatar.src = src;
+    const stored = String(localStorage.getItem("cardastika:avatarUrl") || "").trim();
+    const safeSrc = sanitizeAvatarUrl(stored);
+    const src = safeSrc || "../../assets/cards/arts/fire_001.webp";
+    avatar.src = src;
+    if (avatar.dataset.avatarFallbackBound !== "1") {
+      avatar.dataset.avatarFallbackBound = "1";
+      avatar.addEventListener("error", () => {
+        const fallback = new URL("../../assets/cards/arts/fire_001.webp", location.href).href;
+        if (avatar.src !== fallback) avatar.src = fallback;
+      });
+    }
+    if (!safeSrc && stored) {
+      try {
+        localStorage.removeItem("cardastika:avatarUrl");
+      } catch {
+        // ignore
+      }
+    }
   }
 
   const league = state?.league || null;
@@ -454,6 +492,12 @@ function render() {
   setText("profXpPct", asInt(state?.duel?.leagueProgress?.pct, 0));
   setText("profDays", fmtNum(days));
   setText("profGifts", giftsCount > 0 ? `Подарунків: ${fmtNum(giftsCount)}` : "Подарунків немає.");
+
+  try {
+    buildAndCachePublicProfileSnapshot();
+  } catch {
+    // ignore
+  }
 }
 
 function bind() {
@@ -477,3 +521,4 @@ document.addEventListener("DOMContentLoaded", () => {
   bind();
   render();
 });
+

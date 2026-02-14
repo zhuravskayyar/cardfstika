@@ -10,13 +10,96 @@
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Forum&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../assets/css/ui-shell.css">
+  <link rel="stylesheet" href="../../assets/css/guild.css">
 </head>
 <body>
   <div id="app" class="app">
     <main id="screen" class="screen">
-      <section class="panel">
-        <h1 class="panel__title">Гільдія</h1>
-        <p class="panel__text">Розділ гільдії в розробці. Тут будуть внески, рівень гільдії та активності.</p>
+      <section class="guild-screen" aria-label="Гільдія стихій">
+        <article class="guild-panel">
+          <header class="guild-panel__header">
+            <h1 class="guild-panel__title">Гільдія стихій</h1>
+          </header>
+
+          <div class="guild-crest" aria-hidden="true">
+            <img src="../../assets/icons/shield-umgewandelt-von-png.svg" alt="">
+          </div>
+
+          <div class="guild-welcome">
+            <p class="guild-welcome__title">Ласкаво просимо!</p>
+            <p class="guild-welcome__text">Хочете вступити в гільдію?<br>Або створити власну?</p>
+          </div>
+
+          <section class="guild-gate" id="guildGate">
+            <p class="guild-gate__warning" id="guildGateWarning">Щоб вступити в гільдію або створити нову, потрібен 10 рівень!</p>
+            <p class="guild-gate__level">Ваш поточний рівень: <b id="guildCurrentLevel">1</b></p>
+            <p class="guild-gate__hint" id="guildGateHint">Рівень вказано у Профілі біля імені.</p>
+          </section>
+
+          <p class="guild-tip" id="guildTip">Перемагайте в Дуелях, отримуйте досвід, підвищуйте рівень.</p>
+
+          <button class="guild-benefits-toggle" id="guildBenefitsToggle" type="button" aria-expanded="false" aria-controls="guildBenefits">
+            Що дасть Гільдія
+          </button>
+
+          <section class="guild-benefits" id="guildBenefits" hidden>
+            <div class="guild-benefits__section">
+              <p class="guild-benefits__lead">У вашій Бойовій колоді можуть з'явитися дві додаткові карти:</p>
+              <div class="guild-benefits__cards2">
+                <article class="guild-mini-card">
+                  <div class="guild-mini-card__power">9000</div>
+                  <img src="../../assets/cards/arts/anc_dragon_terralith.webp" alt="Карта союзника">
+                  <h3 class="guild-mini-card__title">Карта союзника</h3>
+                </article>
+                <article class="guild-mini-card">
+                  <div class="guild-mini-card__power">12000</div>
+                  <img src="../../assets/cards/arts/choice_fire_avatar.webp" alt="Карта гільдії">
+                  <h3 class="guild-mini-card__title">Карта гільдії / привілей</h3>
+                </article>
+              </div>
+            </div>
+
+            <div class="guild-benefits__section">
+              <p class="guild-benefits__lead">Ви зможете брати участь у Рейдах гільдії й отримувати карти з колекцій:</p>
+              <div class="guild-benefits__cards3">
+                <article class="guild-raid-card">
+                  <img src="../../assets/cards/arts/anc_dragon_pyroarch.webp" alt="Древні дракони">
+                  <h3 class="guild-raid-card__title">Древні дракони</h3>
+                </article>
+                <article class="guild-raid-card">
+                  <img src="../../assets/cards/arts/rare_dragon_frostfin.webp" alt="Рідкісні дракони">
+                  <h3 class="guild-raid-card__title">Рідкісні дракони</h3>
+                </article>
+                <article class="guild-raid-card">
+                  <img src="../../assets/cards/arts/witch_cinder_hex.webp" alt="Чаклуни">
+                  <h3 class="guild-raid-card__title">Чаклуни</h3>
+                </article>
+              </div>
+            </div>
+
+            <div class="guild-benefits__section">
+              <p class="guild-benefits__lead">Ви зможете брати участь у масових битвах на Війні гільдій і Арені гільдії.</p>
+              <div class="guild-benefits__modes">
+                <article class="guild-mode-card">
+                  <div class="guild-mode-card__icon guild-mode-card__icon--swords" aria-hidden="true"></div>
+                  <h3 class="guild-mode-card__title">Війна гільдій</h3>
+                </article>
+                <article class="guild-mode-card">
+                  <div class="guild-mode-card__icon guild-mode-card__icon--castle" aria-hidden="true"></div>
+                  <h3 class="guild-mode-card__title">Арена гільдії</h3>
+                </article>
+              </div>
+            </div>
+
+            <p class="guild-benefits__friends">Ви знайдете нових друзів!</p>
+          </section>
+
+          <a class="guild-duel-link" href="../duel/duel.html">
+            <span class="guild-duel-link__icon" aria-hidden="true"></span>
+            <span class="guild-duel-link__text">Дуелі</span>
+            <span class="guild-duel-link__dot" aria-hidden="true"></span>
+          </a>
+        </article>
       </section>
     </main>
 
@@ -42,6 +125,6 @@
   </div>
 
   <script type="module" defer src="../../src/ui-shell.js"></script>
+  <script type="module" defer src="./guild.js"></script>
 </body>
 </html>
-

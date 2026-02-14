@@ -34,6 +34,7 @@ import {
   getArenaLeagueIconPath,
   ARENA_STARTING_RATING
 } from "../../src/core/arena-leagues.js";
+import { DailyTasksSystem } from "../../src/daily-tasks-system.js";
 
 // ===================== CONSTANTS =====================
 const CYCLE_MS = 9000;
@@ -113,6 +114,7 @@ async function initArena() {
   }
   arena.playerDeck = applyCollectionBonusesToDeck(arena.playerDeck, collectionBonuses);
   const itemHpBonus = Math.max(0, Math.round(Number(withEquipment?.profile?.hpBonus || 0)));
+  const dragonHpBonus = Math.max(0, Math.round(Number(DailyTasksSystem.getDragonHpBonus() || 0)));
   arena.playerArtifactRuntime = createArtifactRuntime("arena");
 
   const deckPower = arena.playerDeck.reduce((sum, c) => sum + (c?.power ?? 0), 0);
@@ -135,9 +137,10 @@ async function initArena() {
     isBot: false,
     deck: arena.playerDeck
   });
-  if (itemHpBonus > 0) {
-    player.hp += itemHpBonus;
-    player.maxHp += itemHpBonus;
+  const hpFlatBonus = itemHpBonus + dragonHpBonus;
+  if (hpFlatBonus > 0) {
+    player.hp += hpFlatBonus;
+    player.maxHp += hpFlatBonus;
   }
   const hpWithCollections = applyCollectionBonusesToHp(player.maxHp, collectionBonuses, { mode: "arena" });
   if (Number.isFinite(Number(hpWithCollections)) && hpWithCollections > 0) {
@@ -682,6 +685,11 @@ function endFight() {
 
   // Оновлюємо рейтинг арени (перемога якщо живий, поразка якщо ні)
   const result = player.alive ? "win" : "lose";
+  try {
+    DailyTasksSystem.recordArenaBattle({ won: player.alive, count: 1 });
+  } catch {
+    // ignore
+  }
   const ratingResult = updateArenaRating(result, player.damageDone);
 
   // Обчислюємо нагороди

@@ -13410,3 +13410,73 @@ button.btn-attack, a.btn-attack{
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== Botbar Links (forum/chat/news + online) ===== */
+html.has-botbar-links .screen{
+  padding-bottom: calc(var(--botH) + 78px);
+}
+
+html.has-botbar-links .botbar.botbar--with-links{
+  height: auto;
+  display: block;
+  padding: 8px calc(12px + env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-right));
+}
+
+html.has-botbar-links .botbar.botbar--with-links .botbar__main{
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+html.has-botbar-links .botbar.botbar--with-links .botbar__btn{
+  min-height: 52px;
+}
+
+html.has-botbar-links .botbar.botbar--with-links .botbar-links{
+  width: 100%;
+  margin-top: 8px;
+  border-top: 1px solid rgba(96, 156, 196, 0.38);
+  border-bottom: 1px solid rgba(96, 156, 196, 0.22);
+  padding: 8px 6px 6px;
+  display: grid;
+  gap: 6px;
+  background:
+    linear-gradient(180deg, rgba(4, 10, 18, 0.85), rgba(2, 6, 12, 0.86));
+}
+
+html.has-botbar-links .botbar.botbar--with-links .botbar-links__line{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #79b6df;
+  font-family: "EB Garamond", serif;
+  font-size: 16px;
+  line-height: 1;
+}
+
+html.has-botbar-links .botbar.botbar--with-links .botbar-links__line--minor{
+  font-size: 14px;
+  color: #8db6d0;
+}
+
+html.has-botbar-links .botbar.botbar--with-links .botbar-links__link{
+  color: #6fc1f6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.16s ease;
+}
+
+html.has-botbar-links .botbar.botbar--with-links .botbar-links__link:hover{
+  color: #b6e5ff;
+}
+
+html.has-botbar-links .botbar.botbar--with-links .botbar-links__link--news b{
+  color: #ffd56c;
+}
+
+html.has-botbar-links .botbar.botbar--with-links .botbar-links__sep{
+  color: rgba(95, 161, 205, 0.92);
+}

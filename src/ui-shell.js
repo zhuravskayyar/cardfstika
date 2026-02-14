@@ -2,6 +2,7 @@
 // РњС–РЅС–РјР°Р»СЊРЅРёР№ shell: Р°РєС‚РёРІРЅР° РєРЅРѕРїРєР° botbar + РїРµСЂРµС…РѕРґРё РїРѕ СЃС‚РѕСЂС–РЅРєР°С… (MPA).
 import "./account.js";
 import "./progression-system.js";
+import "./net.js";
 import { loadGameData } from "./core/dataLoader.js";
 import { GAME_CONSTANTS } from "./core/constants.js";
 import { installMojibakeRepairer } from "./core/mojibake.js";
@@ -34,6 +35,7 @@ function getRoutes() {
       duel:        "../duel/duel.html",
       profile:     "../profile/profile.html",
       arena:       "../arena/arena.html",
+      auth:        "../auth/auth.html",
     };
   } else {
     // Якщо на головній сторінці, шляхи інші
@@ -46,6 +48,7 @@ function getRoutes() {
       duel:        "./pages/duel/duel.html",
       profile:     "./pages/profile/profile.html",
       arena:       "./pages/arena/arena.html",
+      auth:        "./pages/auth/auth.html",
     };
   }
 }
@@ -88,6 +91,50 @@ function assetPrefix() {
   return inPages ? "../../" : "./";
 }
 
+const AVATAR_ASSET_RE = /^(?:\.\/|\.\.\/\.\.\/|\/)?assets\/cards\/arts\/[\w.-]+\.(?:webp|png|jpe?g|avif)$/i;
+
+function defaultAvatarSrc() {
+  return `${assetPrefix()}assets/cards/arts/fire_001.webp`;
+}
+
+function sanitizeAvatarUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  if (AVATAR_ASSET_RE.test(raw)) {
+    if (raw.startsWith("/assets/")) {
+      return `${assetPrefix()}${raw.replace(/^\/+/, "")}`;
+    }
+    return raw;
+  }
+
+  if (raw.startsWith("assets/")) {
+    return `${assetPrefix()}${raw}`;
+  }
+
+  try {
+    const url = new URL(raw, location.href);
+    if (!/^https?:$/i.test(url.protocol)) return "";
+    if (url.origin === location.origin && !/\/assets\/cards\/arts\//i.test(url.pathname)) return "";
+    return url.href;
+  } catch {
+    return "";
+  }
+}
+
+function readSafeAvatarSrc() {
+  const stored = String(localStorage.getItem("cardastika:avatarUrl") || "").trim();
+  const safe = sanitizeAvatarUrl(stored);
+  if (!safe && stored) {
+    try {
+      localStorage.removeItem("cardastika:avatarUrl");
+    } catch {
+      // ignore
+    }
+  }
+  return safe || defaultAvatarSrc();
+}
+
 function fmtK(n) {
   const v = Number(n);
   if (!Number.isFinite(v)) return "-";
@@ -97,6 +144,65 @@ function fmtK(n) {
   const str = k < 10 ? k.toFixed(1) : k.toFixed(0);
   const cleaned = str.replace(/\.0$/, "");
   return `${v < 0 ? "-" : ""}${cleaned}k`;
+}
+
+function ensureBotbarLinks(botbar) {
+  if (!botbar || botbar.dataset.linksReady === "1") return;
+
+  const routeButtons = Array.from(botbar.querySelectorAll(":scope > .botbar__btn[data-route]"));
+  if (!routeButtons.length) return;
+
+  const mainRow = document.createElement("div");
+  mainRow.className = "botbar__main";
+  routeButtons.forEach((btn) => mainRow.appendChild(btn));
+
+  const links = document.createElement("div");
+  links.className = "botbar-links";
+  links.innerHTML =
+    `<div class="botbar-links__line">` +
+      `<a class="botbar-links__link" href="#" data-stub-link="forum">Форум</a>` +
+      `<span class="botbar-links__sep">✦</span>` +
+      `<a class="botbar-links__link" href="#" data-stub-link="chat">Чат</a>` +
+      `<span class="botbar-links__sep">✦</span>` +
+      `<a class="botbar-links__link botbar-links__link--news" href="#" data-stub-link="news">Новини <b>(+)</b></a>` +
+    `</div>` +
+    `<div class="botbar-links__line botbar-links__line--minor">` +
+      `<a class="botbar-links__link" href="#" data-stub-link="about">Про гру</a>` +
+      `<span class="botbar-links__sep">|</span>` +
+      `<a class="botbar-links__link botbar-links__link--online" href="#" id="botbarOnlineLink">Онлайн: -</a>` +
+      `<span class="botbar-links__sep">|</span>` +
+      `<a class="botbar-links__link" href="#" id="botbarLogoutLink">Вихід</a>` +
+    `</div>`;
+
+  botbar.appendChild(mainRow);
+  botbar.appendChild(links);
+  botbar.classList.add("botbar--with-links");
+  document.documentElement.classList.add("has-botbar-links");
+  botbar.dataset.linksReady = "1";
+  if (String(botbar.style.display || "").toLowerCase() !== "none") {
+    botbar.style.display = "block";
+  }
+
+  links.querySelectorAll("[data-stub-link]").forEach((a) => {
+    a.addEventListener("click", (e) => e.preventDefault());
+  });
+
+  const logout = document.getElementById("botbarLogoutLink");
+  if (logout && logout.dataset.boundLogout !== "1") {
+    logout.dataset.boundLogout = "1";
+    logout.addEventListener("click", (e) => {
+      e.preventDefault();
+      try {
+        localStorage.removeItem("cardastika:player");
+        localStorage.removeItem("cardastika:auth:active");
+      } catch {
+        // ignore
+      }
+      location.href = getRoutes().auth;
+    });
+  }
+
+  window.dispatchEvent(new Event("botbar:links-ready"));
 }
 
 function ensureHud() {
@@ -206,6 +312,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (diamondsPill) diamondsPill.style.display = (route === "shop" || route === "battlepass") ? "" : "none";
 
   const botbar = document.getElementById("botbar");
+  ensureBotbarLinks(botbar);
   const wireBotbarButton = (btn) => {
     if (!btn || btn.dataset.boundNav === "1") return;
     btn.dataset.boundNav = "1";
@@ -269,8 +376,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Avatar
     try {
       if (hudAvatar) {
-        const fromStorage = String(localStorage.getItem("cardastika:avatarUrl") || "").trim();
-        hudAvatar.src = fromStorage || `${assetPrefix()}assets/cards/arts/fire_001.webp`;
+        hudAvatar.src = readSafeAvatarSrc();
+        if (hudAvatar.dataset.avatarFallbackBound !== "1") {
+          hudAvatar.dataset.avatarFallbackBound = "1";
+          hudAvatar.addEventListener("error", () => {
+            const fallback = new URL(defaultAvatarSrc(), location.href).href;
+            if (hudAvatar.src !== fallback) hudAvatar.src = fallback;
+          });
+        }
       }
 
       if (hudXpFill) {

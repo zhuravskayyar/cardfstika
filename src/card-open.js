@@ -34,6 +34,16 @@
     }, 2200);
   }
 
+  function bumpDailyTask(methodName, value = 1) {
+    import("./daily-tasks-system.js")
+      .then((m) => {
+        const api = m?.DailyTasksSystem || window.DailyTasksSystem;
+        const fn = api?.[methodName];
+        if (typeof fn === "function") fn(value);
+      })
+      .catch(() => {});
+  }
+
   const TUTORIAL_STAGE_KEY = "cardastika:tutorialStage";
   const TUTORIAL_REWARD_UID_KEY = "cardastika:tutorial:rewardUid";
 
@@ -948,28 +958,14 @@
         e.preventDefault();
         e.stopPropagation();
         absorbOne();
-        // Update task progress for absorbing cards
-        try {
-          const PROGRESS_KEY = "cardastika:tasks:progress";
-          let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
-          const cur = Math.max(0, Number(progress["t_absorb_cards_10"] ?? 0));
-          progress["t_absorb_cards_10"] = cur + 1;
-          localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-        } catch { /* ignore */ }
+        bumpDailyTask("recordCardsAbsorbed", 1);
       });
 
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         absorbOne();
-        // Update task progress for absorbing cards
-        try {
-          const PROGRESS_KEY = "cardastika:tasks:progress";
-          let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
-          const cur = Math.max(0, Number(progress["t_absorb_cards_10"] ?? 0));
-          progress["t_absorb_cards_10"] = cur + 1;
-          localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-        } catch { /* ignore */ }
+        bumpDailyTask("recordCardsAbsorbed", 1);
       });
 
       item.appendChild(btn);
@@ -1395,14 +1391,7 @@
               // ignore
             }
 
-            // Update task progress for upgrading battle cards
-            try {
-              const PROGRESS_KEY = "cardastika:tasks:progress";
-              let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}") || {};
-              const cur = Math.max(0, Number(progress["t_upgrade_battle_1"] ?? 0));
-              progress["t_upgrade_battle_1"] = cur + 1;
-              localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-            } catch { /* ignore */ }
+            bumpDailyTask("recordCardUpgrades", 1);
 
             const tutorialUpgradeDone = inTutorialUpgradeFlow() && isTutorialRewardCard(target2);
             if (tutorialUpgradeDone) {

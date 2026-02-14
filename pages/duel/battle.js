@@ -1073,7 +1073,8 @@
     playerDeck = applyDeckCollectionBonuses(playerDeck);
 
     console.log("Player deck:", playerDeck);
-    let playerHp = calcHP(playerDeck) + hpBonusFromEquipment;
+    const dragonHpBonus = Math.max(0, Number(localStorage.getItem("cardastika:dragonHpBonus") || 0) || 0);
+    let playerHp = calcHP(playerDeck) + hpBonusFromEquipment + dragonHpBonus;
     playerHp = applyHpCollectionBonuses(playerHp);
     console.log("Player HP calculated from deck:", playerHp);
 

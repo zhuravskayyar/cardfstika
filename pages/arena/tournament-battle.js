@@ -2,6 +2,7 @@
 
 import "../../src/account.js";
 import "../../src/progression-system.js";
+import { DailyTasksSystem } from "../../src/daily-tasks-system.js";
 import { ensureCardCatalogLoaded, resolveCardArt } from "../../src/core/card.js";
 import {
   getCollectionBattleBonuses,
@@ -734,6 +735,7 @@ async function init() {
     playerDeck = withEquipment.deck;
   }
   const hpFlatFromItems = Math.max(0, Math.round(Number(withEquipment?.profile?.hpBonus || 0)));
+  const dragonHpBonus = Math.max(0, Math.round(Number(DailyTasksSystem.getDragonHpBonus() || 0)));
 
   // Колекційні бафи застосовуються до карт на старті бою.
   playerDeck = applyCollectionBonusesToDeck(playerDeck, collectionBonuses);
@@ -745,7 +747,7 @@ async function init() {
   }
 
   // HP гравця
-  let playerHp = calcHP(playerDeck) + hpFlatFromItems;
+  let playerHp = calcHP(playerDeck) + hpFlatFromItems + dragonHpBonus;
   playerHp = applyCollectionBonusesToHp(playerHp, collectionBonuses, { mode: "tournament" });
 
   // HP ворога

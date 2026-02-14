@@ -1,0 +1,57 @@
+.tasks-act__meta {
+  margin: 6px 0 0;
+  color: rgba(244, 233, 212, 0.8);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.tasks-header__text strong {
+  color: #f2d08a;
+}
+
+.task-item.is-claimed-today {
+  border-color: rgba(124, 162, 186, 0.35);
+}
+
+.task-status {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+}
+
+.task-status.is-ready {
+  color: #97f0a8;
+}
+
+.task-status.is-locked {
+  color: #f6c774;
+}
+
+.task-status.is-claimed {
+  color: #9cc8ff;
+}
+
+.task-rewards-wrap {
+  flex-wrap: wrap;
+}
+
+.task-reward-inline--card {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(244, 233, 212, 0.92);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.tasks-note {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(184, 148, 70, 0.24);
+  background: rgba(0, 0, 0, 0.24);
+  color: rgba(216, 229, 241, 0.9);
+  font-size: 12px;
+  line-height: 1.35;
+}
+

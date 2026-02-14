@@ -256,6 +256,9 @@ startNewBtn?.addEventListener("click", async () => {
 
     localStorage.removeItem("cardastika:tasks:progress");
     localStorage.removeItem("cardastika:tasks:claimed");
+    localStorage.removeItem("cardastika:dailyTasks:state");
+    localStorage.removeItem("cardastika:dragonHpBonus");
+    localStorage.removeItem("cardastika:guild:cardBoostProgress");
   } catch (err) {
     console.warn("[auth] failed to reset tutorial state for new game", err);
   }

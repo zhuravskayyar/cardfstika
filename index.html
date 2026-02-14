@@ -11,6 +11,7 @@
 
   <link rel="stylesheet" href="styles/global.css" />
   <link rel="stylesheet" href="assets/css/ui-shell.css" />
+  <link rel="stylesheet" href="assets/css/daily-login-banner.css" />
   <link rel="stylesheet" href="pages/auth/auth.css" />
 </head>
 
@@ -158,6 +159,8 @@
   </div>
 
   <script type="module">
+    import { maybeShowDailyLoginRewardBanner } from "./src/daily-login-reward.js";
+
     const TUTORIAL_COMPLETED_KEY = "cardastika:tutorialCompleted";
     const TUTORIAL_STAGE_KEY = "cardastika:tutorialStage";
     const AUTH_ACTIVE_KEY = "cardastika:auth:active";
@@ -193,6 +196,7 @@
         const botbar = document.getElementById("botbar");
         if (mainScreen) mainScreen.style.display = "block";
         if (botbar) botbar.style.display = "grid";
+        maybeShowDailyLoginRewardBanner().catch(() => {});
       }
     }
   </script>

@@ -1,0 +1,358 @@
+﻿.guild-screen {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.guild-panel {
+  border: 1px solid rgba(73, 164, 216, 0.35);
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 100% at 50% 0%, rgba(22, 62, 84, 0.22), transparent 64%),
+    radial-gradient(130% 115% at 0% 100%, rgba(24, 54, 94, 0.16), transparent 68%),
+    linear-gradient(180deg, rgba(6, 11, 17, 0.97), rgba(4, 8, 12, 0.98));
+  box-shadow:
+    0 20px 34px rgba(0, 0, 0, 0.54),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.guild-panel__header {
+  padding: 7px 12px;
+  border-bottom: 1px solid rgba(8, 18, 8, 0.85);
+  background:
+    linear-gradient(180deg, rgba(85, 167, 43, 0.95), rgba(41, 111, 20, 0.95));
+  box-shadow:
+    inset 0 1px 0 rgba(205, 255, 181, 0.32),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.guild-panel__title {
+  margin: 0;
+  font-family: "Forum", "EB Garamond", serif;
+  font-size: 20px;
+  letter-spacing: 0.35px;
+  text-align: center;
+  color: #e6ffe2;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+.guild-crest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 12px 8px;
+}
+
+.guild-crest::before,
+.guild-crest::after {
+  content: "✦";
+  color: rgba(255, 209, 104, 0.88);
+  text-shadow: 0 0 8px rgba(255, 188, 89, 0.35);
+}
+
+.guild-crest img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+}
+
+.guild-welcome {
+  padding: 8px 14px 12px;
+  border-top: 1px solid rgba(98, 172, 214, 0.25);
+  border-bottom: 1px solid rgba(98, 172, 214, 0.2);
+  text-align: center;
+}
+
+.guild-welcome__title {
+  margin: 0 0 4px;
+  font-size: 34px;
+  line-height: 1.06;
+  color: #4eb5ef;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 6px 16px rgba(17, 80, 122, 0.4);
+}
+
+.guild-welcome__text {
+  margin: 0;
+  color: rgba(240, 248, 255, 0.95);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.guild-gate {
+  margin: 10px 10px 0;
+  padding: 9px 10px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(107, 189, 238, 0.36);
+  background: rgba(8, 14, 21, 0.9);
+  text-align: center;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 16px rgba(0, 0, 0, 0.36);
+}
+
+.guild-gate__warning {
+  margin: 0;
+  color: #f5a92f;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.guild-gate__level {
+  margin: 6px 0 0;
+  color: #43befd;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.guild-gate__hint {
+  margin: 4px 0 0;
+  color: rgba(220, 237, 252, 0.86);
+  font-size: 13px;
+}
+
+.guild-tip {
+  margin: 14px 14px 10px;
+  text-align: center;
+  color: #f7b640;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.guild-benefits-toggle {
+  display: block;
+  width: min(250px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 7px 12px;
+  border: 1px solid rgba(70, 191, 255, 0.62);
+  border-radius: 9px;
+  background:
+    linear-gradient(180deg, rgba(35, 144, 202, 0.75), rgba(20, 72, 110, 0.85));
+  color: #d5f4ff;
+  font-family: "EB Garamond", serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+  transition: transform 0.14s ease, filter 0.14s ease, box-shadow 0.14s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(186, 239, 255, 0.3),
+    0 12px 20px rgba(0, 0, 0, 0.34);
+}
+
+.guild-benefits-toggle:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.guild-benefits-toggle:active {
+  transform: translateY(1px);
+}
+
+.guild-benefits {
+  margin-top: 10px;
+  border-top: 1px solid rgba(75, 167, 223, 0.3);
+  background:
+    linear-gradient(180deg, rgba(5, 11, 17, 0.88), rgba(3, 8, 12, 0.96));
+}
+
+.guild-benefits__section {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(75, 167, 223, 0.25);
+}
+
+.guild-benefits__lead {
+  margin: 0;
+  text-align: center;
+  color: #e4f1ff;
+  font-size: 14px;
+  line-height: 1.22;
+}
+
+.guild-benefits__cards2,
+.guild-benefits__cards3,
+.guild-benefits__modes {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.guild-benefits__cards2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guild-benefits__cards3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.guild-benefits__modes {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guild-mini-card,
+.guild-raid-card,
+.guild-mode-card {
+  text-align: center;
+}
+
+.guild-mini-card {
+  padding: 4px 2px 0;
+}
+
+.guild-mini-card img {
+  width: 74px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(244, 186, 99, 0.7);
+  box-shadow:
+    0 10px 18px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.guild-mini-card__power {
+  display: inline-block;
+  margin-bottom: 3px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(13, 22, 30, 0.94);
+  border: 1px solid rgba(77, 179, 242, 0.55);
+  color: #f8bb54;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.guild-mini-card__title,
+.guild-raid-card__title,
+.guild-mode-card__title {
+  margin: 5px 0 0;
+  color: #5ac7ff;
+  font-family: "EB Garamond", serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.guild-raid-card img {
+  width: 84px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(244, 186, 99, 0.7);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.45);
+}
+
+.guild-mode-card {
+  padding: 6px;
+}
+
+.guild-mode-card__icon {
+  width: 84px;
+  height: 56px;
+  margin: 0 auto;
+  border-radius: 12px;
+  border: 1px solid rgba(97, 188, 241, 0.6);
+  background:
+    linear-gradient(180deg, rgba(26, 99, 139, 0.6), rgba(10, 35, 55, 0.82));
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.4);
+}
+
+.guild-mode-card__icon--swords {
+  background:
+    url("../../assets/icons/swords-solid.svg") center / 52% no-repeat,
+    linear-gradient(180deg, rgba(26, 99, 139, 0.6), rgba(10, 35, 55, 0.82));
+}
+
+.guild-mode-card__icon--castle {
+  background:
+    url("../../assets/icons/castle-umgewandelt-von-png.svg") center / 58% no-repeat,
+    linear-gradient(180deg, rgba(26, 99, 139, 0.6), rgba(10, 35, 55, 0.82));
+}
+
+.guild-benefits__friends {
+  margin: 0;
+  padding: 10px;
+  text-align: center;
+  color: #ffd56f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.guild-duel-link {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid rgba(72, 162, 216, 0.32);
+  background:
+    linear-gradient(180deg, rgba(14, 64, 95, 0.5), rgba(6, 20, 31, 0.95));
+  color: #caebff;
+  text-decoration: none;
+}
+
+.guild-duel-link__icon {
+  width: 18px;
+  height: 18px;
+  background: url("../../assets/icons/swords-solid.svg") center / contain no-repeat;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.65));
+}
+
+.guild-duel-link__text {
+  font-size: 26px;
+  line-height: 1;
+  color: #57c5ff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.guild-duel-link__dot {
+  margin-left: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 36%, #d6ffd8 0, #58e36c 48%, #0f6d25 100%);
+  box-shadow: 0 0 12px rgba(78, 236, 107, 0.7);
+}
+
+.guild-gate.is-unlocked {
+  border-color: rgba(115, 218, 143, 0.52);
+  background: rgba(7, 20, 13, 0.88);
+}
+
+.guild-gate.is-unlocked .guild-gate__warning {
+  color: #74df92;
+}
+
+.guild-gate.is-unlocked .guild-gate__level {
+  color: #9cfcb8;
+}
+
+@media (max-width: 390px) {
+  .guild-welcome__title {
+    font-size: 29px;
+  }
+
+  .guild-mini-card img {
+    width: 68px;
+  }
+
+  .guild-raid-card img {
+    width: 72px;
+  }
+
+  .guild-mode-card__icon {
+    width: 74px;
+    height: 50px;
+  }
+
+  .guild-duel-link__text {
+    font-size: 24px;
+  }
+}

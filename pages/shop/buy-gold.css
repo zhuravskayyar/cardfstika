@@ -1,0 +1,46 @@
+.buy-gold-local {
+  margin-bottom: 12px;
+}
+
+.buy-gold-local__title {
+  margin: 0;
+  color: #f2d08a;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.buy-gold-local__text {
+  margin: 8px 0 0;
+  color: rgba(244, 233, 212, 0.9);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.buy-gold-local__packs {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.buy-gold-pack {
+  width: 100%;
+}
+
+.buy-gold-pack--x1000 {
+  background:
+    linear-gradient(180deg, rgba(156, 255, 198, 0.14) 0%, rgba(8, 36, 28, 0.2) 100%),
+    var(--btn-tex-green) center / cover no-repeat;
+  border-color: rgba(124, 162, 186, 0.42);
+}
+
+.buy-gold-pack--x1000 span {
+  color: rgba(230, 242, 248, 0.96);
+  text-shadow: none;
+}
+
+.buy-gold-local__hp {
+  margin: 10px 0 0;
+  color: #9cc8ff;
+  font-size: 13px;
+  font-weight: 700;
+}
