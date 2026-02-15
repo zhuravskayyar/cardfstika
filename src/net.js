@@ -49,6 +49,16 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
     legendary: "rarity-5",
     mythic: "rarity-6"
   };
+  const SOURCE_ART_FILE_BY_ID = Object.freeze({
+    source_fire: "istokfire.webp",
+    source_water: "istokwater.webp",
+    source_air: "istokair.webp",
+    source_earth: "istokearth.webp",
+    istokfire: "istokfire.webp",
+    istokwater: "istokwater.webp",
+    istokair: "istokair.webp",
+    istokearth: "istokearth.webp"
+  });
 
   let socket = null;
   let pingInterval = null;
@@ -256,7 +266,9 @@ import { buildAndCachePublicProfileSnapshot, readPublicProfileCache } from "./pu
   function cardArtByIdUrl(cardLike) {
     const id = extractCardId(cardLike);
     if (!id) return "";
-    return toAbsoluteUrl(`${assetPrefix()}assets/cards/arts/${id}.webp`, "");
+    const mapped = SOURCE_ART_FILE_BY_ID[String(id).toLowerCase()];
+    const artFile = mapped || `${id}.webp`;
+    return toAbsoluteUrl(`${assetPrefix()}assets/cards/arts/${artFile}`, "");
   }
 
   function cardArtFromFileUrl(cardLike) {

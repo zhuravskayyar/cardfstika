@@ -43,6 +43,13 @@
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
   const pick  = (arr)=>arr[Math.floor(Math.random()*arr.length)];
   const rint  = (a,b)=>a+Math.floor(Math.random()*(b-a+1));
+  const DUEL_FX_CLASSES = ["duel-fx--gold", "duel-fx--red", "duel-fx--blue", "duel-fx--green"];
+  const ATTACK_EASE = "cubic-bezier(.2,.9,.2,1)";
+  const ATTACK_DASH_TO_CENTER_MS = 300;
+  const ATTACK_DASH_TO_TARGET_MS = 140;
+  const ATTACK_SWAP_MS = 260;
+  const ATTACK_RETURN_MS = 240;
+  const ATTACK_IMPACT_STOP_MS = 24;
   const safeGetItem = (storage, key) => {
     try {
       return storage?.getItem?.(key) ?? null;
@@ -51,6 +58,438 @@
       return null;
     }
   };
+  const wait = (ms)=>new Promise((resolve)=>setTimeout(resolve, ms));
+  const raf = () => new Promise((resolve) => requestAnimationFrame(resolve));
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  function easeInOutCubic(t){
+    if (t < 0.5) return 4 * t * t * t;
+    return 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function easeOutBack(t){
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+
+  function rectCenter(el){
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2, r };
+  }
+
+  function getCenterOfBoard(boardEl){
+    const r = (boardEl || document.body).getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  function duelFxVariantForElement(element){
+    const el = String(element || "").toLowerCase();
+    if (el === "fire") return "red";
+    if (el === "water") return "blue";
+    if (el === "earth") return "green";
+    return "gold";
+  }
+
+  function setDuelFxVariant(variant){
+    const host = document.body;
+    if (!host?.classList) return;
+    const normalized = String(variant || "gold").toLowerCase();
+    const targetClass = DUEL_FX_CLASSES.includes(`duel-fx--${normalized}`)
+      ? `duel-fx--${normalized}`
+      : "duel-fx--gold";
+    host.classList.remove(...DUEL_FX_CLASSES);
+    host.classList.add(targetClass);
+  }
+
+  async function animateArcTransform(el, fromX, fromY, toX, toY, opts = {}){
+    if (!el) return;
+    const dur = Math.max(1, Number(opts?.dur) || 320);
+    const arc = Number(opts?.arc) || 110;
+    const rotate = Number(opts?.rotate) || 8;
+    const scaleUp = Number(opts?.scaleUp) || 1.10;
+    const easing = typeof opts?.easing === "function" ? opts.easing : easeInOutCubic;
+    const start = performance.now();
+    let prevX = fromX;
+    let prevY = fromY;
+    let prevT = start;
+
+    while (true) {
+      const now = performance.now();
+      const t = Math.min(1, (now - start) / dur);
+      const e = easing(t);
+      const x = lerp(fromX, toX, e);
+      const yLin = lerp(fromY, toY, e);
+      const hump = 4 * t * (1 - t);
+      const y = yLin - arc * hump;
+
+      const dt = Math.max(8, now - prevT);
+      const speed = Math.hypot(x - prevX, y - prevY) / dt;
+      setMotionBlur(el, speed * 1.6);
+      prevX = x;
+      prevY = y;
+      prevT = now;
+
+      const ang = (toX >= fromX ? 1 : -1) * rotate * (0.35 + 0.65 * hump);
+      const s = 1 + (scaleUp - 1) * hump;
+      const sx = s + 0.04 * hump;
+      const sy = s - 0.04 * hump;
+      el.style.transform = `translate(${x}px,${y}px) rotate(${ang}deg) scale(${sx},${sy})`;
+      if (t >= 1) break;
+      await raf();
+    }
+
+    setMotionBlur(el, 0);
+  }
+
+  function flipAnimate(elements, beforeRects, duration = ATTACK_SWAP_MS){
+    const animations = elements.map((el) => {
+      if (!el) return Promise.resolve();
+
+      const before = beforeRects.get(el);
+      if (!before) return Promise.resolve();
+
+      const after = el.getBoundingClientRect();
+      const dx = before.left - after.left;
+      const dy = before.top - after.top;
+
+      if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return Promise.resolve();
+
+      el.classList.add("fx-flip");
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+      el.style.transition = "transform 0s";
+      void el.getBoundingClientRect();
+
+      return new Promise((resolve) => {
+        const cleanup = () => {
+          clearTimeout(timeoutId);
+          el.style.transition = "";
+          el.style.transform = "";
+          el.classList.remove("fx-flip");
+          el.removeEventListener("transitionend", onEnd);
+          resolve();
+        };
+
+        const onEnd = (evt) => {
+          if (evt.target !== el) return;
+          cleanup();
+        };
+
+        const timeoutId = setTimeout(cleanup, duration + 80);
+        el.addEventListener("transitionend", onEnd);
+        el.style.transition = `transform ${duration}ms ${ATTACK_EASE}`;
+        el.style.transform = "translate(0px, 0px)";
+      });
+    });
+
+    return Promise.all(animations);
+  }
+
+  async function swapCardsWithFlip(attackerEl, defenderEl, duration = ATTACK_SWAP_MS){
+    const attackerSlot = attackerEl?.closest(".battle-card-slot");
+    const defenderSlot = defenderEl?.closest(".battle-card-slot");
+    if (!attackerSlot || !defenderSlot || attackerSlot === defenderSlot) return;
+
+    const beforeRects = new Map();
+    beforeRects.set(attackerEl, attackerEl.getBoundingClientRect());
+    beforeRects.set(defenderEl, defenderEl.getBoundingClientRect());
+
+    const attackerPlaceholder = document.createComment("attacker-slot");
+    const defenderPlaceholder = document.createComment("defender-slot");
+
+    attackerSlot.replaceChild(attackerPlaceholder, attackerEl);
+    defenderSlot.replaceChild(defenderPlaceholder, defenderEl);
+    attackerSlot.replaceChild(defenderEl, attackerPlaceholder);
+    defenderSlot.replaceChild(attackerEl, defenderPlaceholder);
+
+    await flipAnimate([attackerEl, defenderEl], beforeRects, duration);
+    refreshCardRefs();
+  }
+
+  function showDamagePop(targetEl, dmg){
+    if (!targetEl) return;
+    const value = Math.max(0, Math.round(Number(dmg) || 0));
+    if (!value) return;
+
+    let dmgEl = targetEl.querySelector(".duel-dmg");
+    if (!dmgEl) {
+      dmgEl = document.createElement("div");
+      dmgEl.className = "duel-dmg";
+      targetEl.appendChild(dmgEl);
+    }
+
+    dmgEl.textContent = `-${value}`;
+    dmgEl.classList.remove("show");
+    void dmgEl.offsetWidth;
+    dmgEl.classList.add("show");
+  }
+
+  function setMotionBlur(el, px){
+    if (!el) return;
+    const value = Math.max(0, Math.min(1.6, Number(px) || 0));
+    el.style.setProperty("--mb", `${value.toFixed(2)}px`);
+  }
+
+  function spawnSparksAt(x, y, count = 5){
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
+
+    for (let i = 0; i < count; i++) {
+      const spark = document.createElement("div");
+      spark.className = "fx-spark";
+      spark.style.left = `${x}px`;
+      spark.style.top = `${y}px`;
+
+      const ang = (Math.random() * Math.PI) + Math.PI;
+      const dist = 20 + Math.random() * 46;
+      const sx = Math.cos(ang) * dist;
+      const sy = Math.sin(ang) * dist;
+      spark.style.setProperty("--sx", `${sx.toFixed(1)}px`);
+      spark.style.setProperty("--sy", `${sy.toFixed(1)}px`);
+
+      document.body.appendChild(spark);
+      requestAnimationFrame(() => {
+        spark.style.animation = `fx-spark ${260 + Math.random() * 140}ms ease-out forwards`;
+        spark.style.opacity = "1";
+      });
+
+      setTimeout(() => spark.remove(), 520);
+    }
+  }
+
+  function triggerRecoil(targetEl, attackerEl){
+    if (!targetEl || !attackerEl) return;
+    const a = rectCenter(attackerEl);
+    const t = rectCenter(targetEl);
+    const vx = t.x - a.x;
+    const vy = t.y - a.y;
+    const len = Math.max(1, Math.hypot(vx, vy));
+    const nx = vx / len;
+    const ny = vy / len;
+
+    targetEl.style.setProperty("--recoil-x", `${(nx * 10).toFixed(1)}px`);
+    targetEl.style.setProperty("--recoil-y", `${(ny * 10).toFixed(1)}px`);
+    targetEl.classList.remove("fx-recoil");
+    void targetEl.offsetWidth;
+    targetEl.classList.add("fx-recoil");
+    setTimeout(() => targetEl.classList.remove("fx-recoil"), 220);
+  }
+
+  function cameraShake(boardEl){
+    if (!boardEl?.classList) return;
+    boardEl.classList.remove("fx-shake");
+    void boardEl.offsetWidth;
+    boardEl.classList.add("fx-shake");
+    setTimeout(() => boardEl.classList.remove("fx-shake"), 180);
+  }
+
+  function triggerImpactFx(targetEl, boardEl, attackerEl = null){
+    if (!targetEl) return;
+    targetEl.classList.remove("fx-impact", "hit", "flash");
+    void targetEl.offsetWidth;
+    targetEl.classList.add("fx-impact", "hit", "flash");
+    setTimeout(() => targetEl.classList.remove("fx-impact", "hit", "flash"), 260);
+    cameraShake(boardEl);
+
+    if (attackerEl) triggerRecoil(targetEl, attackerEl);
+
+    const tc = rectCenter(targetEl);
+    spawnSparksAt(tc.x, tc.y, 4 + Math.floor(Math.random() * 3));
+  }
+
+  async function animateAttack(attackerEl, targetEl, dmg = 0, boardEl = null, onImpact = null){
+    let resolved = false;
+    const finish = () => {
+      if (resolved) return;
+      resolved = true;
+      if (typeof onImpact === "function") onImpact();
+    };
+
+    if (!attackerEl || !targetEl) {
+      finish();
+      return;
+    }
+
+    if (typeof attackerEl.animate !== "function") {
+      await wait(ATTACK_IMPACT_STOP_MS);
+      triggerImpactFx(targetEl, boardEl || els?.arena, attackerEl);
+      showDamagePop(targetEl, dmg);
+      await swapCardsWithFlip(attackerEl, targetEl, ATTACK_SWAP_MS);
+      finish();
+      return;
+    }
+
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+      await wait(ATTACK_IMPACT_STOP_MS);
+      triggerImpactFx(targetEl, boardEl || els?.arena, attackerEl);
+      showDamagePop(targetEl, dmg);
+      await swapCardsWithFlip(attackerEl, targetEl, ATTACK_SWAP_MS);
+      finish();
+      return;
+    }
+
+    const attackerSlot = attackerEl.closest(".battle-card-slot");
+    const defenderSlot = targetEl.closest(".battle-card-slot");
+    if (!attackerSlot || !defenderSlot) {
+      triggerImpactFx(targetEl, boardEl || els?.arena, attackerEl);
+      showDamagePop(targetEl, dmg);
+      finish();
+      return;
+    }
+
+    const a = rectCenter(attackerEl);
+    const d = rectCenter(targetEl);
+    const c = getCenterOfBoard(boardEl);
+    const dxC = c.x - a.x;
+    const dyC = c.y - a.y;
+    const fromCenterX = a.x + dxC;
+    const fromCenterY = a.y + dyC;
+    const dxD = d.x - fromCenterX;
+    const dyD = d.y - fromCenterY;
+
+    const attackerPlaceholder = document.createComment("attacker-flight-slot");
+    let swappedIntoAttackerSlot = false;
+    const restore = {
+      position: attackerEl.style.position,
+      left: attackerEl.style.left,
+      top: attackerEl.style.top,
+      width: attackerEl.style.width,
+      height: attackerEl.style.height,
+      margin: attackerEl.style.margin,
+      zIndex: attackerEl.style.zIndex,
+      pointerEvents: attackerEl.style.pointerEvents,
+      transformOrigin: attackerEl.style.transformOrigin,
+      transform: attackerEl.style.transform,
+      transition: attackerEl.style.transition,
+    };
+
+    const resetAttackerStyles = () => {
+      try {
+        attackerEl.getAnimations?.().forEach((anim) => anim.cancel());
+      } catch (e) {
+        // ignore animation cleanup errors
+      }
+      attackerEl.style.position = restore.position;
+      attackerEl.style.left = restore.left;
+      attackerEl.style.top = restore.top;
+      attackerEl.style.width = restore.width;
+      attackerEl.style.height = restore.height;
+      attackerEl.style.margin = restore.margin;
+      attackerEl.style.zIndex = restore.zIndex;
+      attackerEl.style.pointerEvents = restore.pointerEvents;
+      attackerEl.style.transformOrigin = restore.transformOrigin;
+      attackerEl.style.transform = restore.transform;
+      attackerEl.style.transition = restore.transition;
+      attackerEl.style.removeProperty("--mb");
+      attackerEl.classList.remove("duel-flight-original");
+      attackerEl.classList.remove("fx-trail");
+      attackerEl.classList.remove("fx-anticipate");
+    };
+
+    try {
+      try {
+        attackerEl.classList.add("fx-anticipate");
+        setTimeout(() => attackerEl.classList.remove("fx-anticipate"), 140);
+      } catch (e) {
+        // ignore anticipation errors
+      }
+      await wait(60);
+
+      attackerSlot.replaceChild(attackerPlaceholder, attackerEl);
+      attackerEl.classList.add("duel-flight-original");
+      attackerEl.classList.add("fx-trail");
+      try {
+        attackerEl.getAnimations?.().forEach((anim) => anim.cancel());
+      } catch (e) {
+        // ignore animation cleanup errors
+      }
+      attackerEl.style.position = "fixed";
+      attackerEl.style.left = `${a.r.left}px`;
+      attackerEl.style.top = `${a.r.top}px`;
+      attackerEl.style.width = `${a.r.width}px`;
+      attackerEl.style.height = `${a.r.height}px`;
+      attackerEl.style.margin = "0";
+      attackerEl.style.zIndex = "9999";
+      attackerEl.style.pointerEvents = "none";
+      attackerEl.style.transformOrigin = "center";
+      document.body.appendChild(attackerEl);
+
+      attackerEl.style.transform = "translate(0px,0px)";
+
+      await animateArcTransform(attackerEl, 0, 0, dxC, dyC, {
+        dur: ATTACK_DASH_TO_CENTER_MS,
+        arc: 120,
+        rotate: 8,
+        scaleUp: 1.12,
+      });
+
+      await animateArcTransform(attackerEl, dxC, dyC, dxC + dxD, dyC + dyD, {
+        dur: ATTACK_DASH_TO_TARGET_MS,
+        arc: 40,
+        rotate: 4,
+        scaleUp: 1.06,
+        easing: (t)=>1 - Math.pow(1 - t, 3),
+      });
+
+      await wait(ATTACK_IMPACT_STOP_MS);
+      triggerImpactFx(targetEl, boardEl || els?.arena, attackerEl);
+      showDamagePop(targetEl, dmg);
+
+      const defenderSlotRect = defenderSlot.getBoundingClientRect();
+      const toDefenderDx = defenderSlotRect.left - a.r.left;
+      const toDefenderDy = defenderSlotRect.top - a.r.top;
+
+      await animateArcTransform(
+        attackerEl,
+        dxC + dxD, dyC + dyD,
+        toDefenderDx, toDefenderDy,
+        {
+          dur: ATTACK_RETURN_MS,
+          arc: 30,
+          rotate: 2,
+          scaleUp: 1.02,
+          easing: easeOutBack,
+        }
+      );
+
+      attackerEl.classList.remove("fx-trail");
+
+      const defenderBefore = new Map();
+      defenderBefore.set(targetEl, targetEl.getBoundingClientRect());
+
+      if (defenderSlot.contains(targetEl)) {
+        defenderSlot.replaceChild(attackerEl, targetEl);
+      } else {
+        defenderSlot.appendChild(attackerEl);
+      }
+
+      if (attackerPlaceholder.parentNode === attackerSlot) {
+        attackerSlot.replaceChild(targetEl, attackerPlaceholder);
+        swappedIntoAttackerSlot = true;
+      }
+
+      await flipAnimate([targetEl], defenderBefore, ATTACK_SWAP_MS);
+
+      resetAttackerStyles();
+      refreshCardRefs();
+      finish();
+    } finally {
+      if (attackerEl.parentNode === document.body) {
+        if (swappedIntoAttackerSlot && defenderSlot) {
+          defenderSlot.appendChild(attackerEl);
+        } else if (attackerSlot && attackerPlaceholder.parentNode === attackerSlot) {
+          attackerSlot.replaceChild(attackerEl, attackerPlaceholder);
+        }
+      }
+
+      if (attackerPlaceholder.parentNode) {
+        attackerPlaceholder.parentNode.removeChild(attackerPlaceholder);
+      }
+
+      resetAttackerStyles();
+      refreshCardRefs();
+      finish();
+    }
+  }
 
   function escHtml(s) {
     return String(s ?? "")
@@ -251,9 +690,22 @@
     return s;
   }
 
+  const SOURCE_ART_FILE_BY_ID = Object.freeze({
+    source_fire: "istokfire.webp",
+    source_water: "istokwater.webp",
+    source_air: "istokair.webp",
+    source_earth: "istokearth.webp",
+    istokfire: "istokfire.webp",
+    istokwater: "istokwater.webp",
+    istokair: "istokair.webp",
+    istokearth: "istokearth.webp",
+  });
+
   function artFileFromCardId(cardId) {
     const id = String(cardId || "").trim();
     if (!id) return "";
+    const mapped = SOURCE_ART_FILE_BY_ID[id.toLowerCase()];
+    if (mapped) return mapped;
     return normalizeArtFileName(id);
   }
 
@@ -678,10 +1130,16 @@
     playerHp: q(".battle-player--self .battle-player__hp"),
     log: q(".battle-log__entries"),
     attackBtn: q("#attackBtn"),
+    arena: q(".battle-arena-frame"),
     enemyBtns: qa(".battle-cards--enemy .ref-card"),
     playerBtns: qa(".battle-cards:not(.battle-cards--enemy) .ref-card"),
     multEls: qa(".battle-multipliers .battle-multiplier")
   };
+
+  function refreshCardRefs(){
+    els.enemyBtns = qa(".battle-cards--enemy .ref-card");
+    els.playerBtns = qa(".battle-cards:not(.battle-cards--enemy) .ref-card");
+  }
 
   // ==========================================
   // РЕНДЕРИНГ
@@ -827,6 +1285,8 @@
 
   function renderAll(){
     if (!CURRENT_DUEL) return;
+    refreshCardRefs();
+
     for (let i=0;i<els.playerBtns.length;i++){
       const btn = els.playerBtns[i];
 
@@ -943,26 +1403,16 @@
   }
 
   function bindUI(){
-    function runAttackAnimation(idx){
+    refreshCardRefs();
+
+    async function runAttackAnimation(idx, dmg, onImpact){
+      refreshCardRefs();
       const attackerBtn = els.playerBtns[idx];
       const defenderBtn = els.enemyBtns[idx];
-      if (!attackerBtn || !defenderBtn) return;
-
-      attackerBtn.classList.remove("is-attacking");
-      defenderBtn.classList.remove("is-hit");
-      // Restart CSS animation on rapid repeated attacks.
-      void attackerBtn.offsetWidth;
-      void defenderBtn.offsetWidth;
-
-      attackerBtn.classList.add("is-attacking");
-      setTimeout(() => defenderBtn.classList.add("is-hit"), 120);
-      setTimeout(() => {
-        attackerBtn.classList.remove("is-attacking");
-        defenderBtn.classList.remove("is-hit");
-      }, 320);
+      await animateAttack(attackerBtn, defenderBtn, dmg, els.arena, onImpact);
     }
 
-    function performTurnWithAnimation(idx){
+    async function performTurnWithAnimation(idx){
       if (!CURRENT_DUEL || CURRENT_DUEL.finished || isTurnAnimating) return;
 
       // if slot is empty, refill first and do not spend animation on an invalid turn
@@ -973,16 +1423,21 @@
         return;
       }
 
-      isTurnAnimating = true;
-      runAttackAnimation(idx);
+      const pCard = CURRENT_DUEL.player.hand[idx];
+      const eCard = CURRENT_DUEL.enemy.hand[idx];
+      const pHit = window.damage(pCard, eCard);
+      setDuelFxVariant(duelFxVariantForElement(pCard?.element));
 
-      setTimeout(() => {
+      isTurnAnimating = true;
+      let turnApplied = false;
+      const applyTurn = () => {
+        if (turnApplied) return;
+        turnApplied = true;
         try {
           CURRENT_DUEL = window.playTurn(CURRENT_DUEL, idx);
         } catch (e) {
           console.error("playTurn failed:", e);
           alert("Помилка ходу. Відкрий консоль (F12) щоб побачити деталі.");
-          isTurnAnimating = false;
           return;
         }
 
@@ -990,8 +1445,17 @@
         if (CURRENT_DUEL.finished) {
           endBattle();
         }
+      };
+
+      try {
+        await runAttackAnimation(idx, pHit?.dmg ?? 0, applyTurn);
+        if (!turnApplied) applyTurn();
+      } catch (e) {
+        console.error("attack animation failed:", e);
+        if (!turnApplied) applyTurn();
+      } finally {
         isTurnAnimating = false;
-      }, 170);
+      }
     }
 
     // клік по своїй карті = дзеркальна атака 1в1 (слот i -> слот i)

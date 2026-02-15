@@ -411,9 +411,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const goldWrap = document.getElementById("rewardGoldWrap");
   const silverWrap = document.getElementById("rewardSilverWrap");
   const xpWrap = document.getElementById("rewardXpWrap");
+  const sourceWrap = document.getElementById("rewardSourceWrap");
+  const trophyWrap = document.getElementById("rewardTrophyWrap");
   if (goldWrap) goldWrap.hidden = gold === 0;
   if (silverWrap) silverWrap.hidden = silver === 0;
   if (xpWrap) xpWrap.hidden = xp === 0;
+  if (sourceWrap) sourceWrap.hidden = true;
+  if (trophyWrap) trophyWrap.hidden = true;
 
   // Випадання карти-джерела з арени (15% шанс при перемозі, не бос)
   if (!isBossBattle && res === "win") {
@@ -422,7 +426,6 @@ document.addEventListener("DOMContentLoaded", () => {
       saveSourceToInventory(sourceCard);
       
       // Показуємо інформацію про випалу карту
-      const sourceWrap = document.getElementById("rewardSourceWrap");
       const sourceText = document.getElementById("rewardSource");
       if (sourceWrap && sourceText) {
         sourceText.textContent = formatSourceCardInfo(sourceCard);
@@ -524,7 +527,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const diaWrap = document.getElementById("rewardDiamondsWrap");
       const silverWrap = document.getElementById("rewardSilverWrap");
       const xpWrap = document.getElementById("rewardXpWrap");
-      const trophyWrap = document.getElementById("rewardTrophyWrap");
 
       if (silverWrap) silverWrap.hidden = true;
       if (xpWrap) xpWrap.hidden = true;

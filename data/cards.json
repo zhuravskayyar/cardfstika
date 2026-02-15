@@ -2952,7 +2952,7 @@
       "isSource": true,
       "description": "Магічне джерело вогняної стихії. Використовується для прокачки карт.",
       "artNum": 62,
-      "artFile": "fire_062.webp"
+      "artFile": "istokfire.webp"
     },
     {
       "id": "source_water",
@@ -2963,7 +2963,7 @@
       "isSource": true,
       "description": "Магічне джерело водної стихії. Використовується для прокачки карт.",
       "artNum": 57,
-      "artFile": "water_057.webp"
+      "artFile": "istokwater.webp"
     },
     {
       "id": "source_air",
@@ -2974,7 +2974,7 @@
       "isSource": true,
       "description": "Магічне джерело повітряної стихії. Використовується для прокачки карт.",
       "artNum": 63,
-      "artFile": "air_063.webp"
+      "artFile": "istokair.webp"
     },
     {
       "id": "source_earth",
@@ -2985,7 +2985,7 @@
       "isSource": true,
       "description": "Магічне джерело земляної стихії. Використовується для прокачки карт.",
       "artNum": 63,
-      "artFile": "earth_063.webp"
+      "artFile": "istokearth.webp"
     }
   ]
 }

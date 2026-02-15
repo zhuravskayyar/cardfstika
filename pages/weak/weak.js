@@ -2,6 +2,9 @@
 import "../../src/account.js";
 import { CARD_BELONGS_TO, decorateCard, ensureCardCatalogLoaded, resolveCardArt } from "../../src/core/card.js";
 
+const SOURCE_DROPS_KEY = "cardastika:sourceDrops";
+const SOURCE_CONSUMED_KEY = "cardastika:sourceConsumedUids";
+
 function asNum(v, d = 0) {
   const n = Number(v);
   return Number.isFinite(n) ? n : d;
@@ -106,22 +109,131 @@ function migrateList(levelsData, list) {
   return changed;
 }
 
+function isSourceCardLike(raw) {
+  if (!raw || typeof raw !== "object") return false;
+  if (raw.isSource) return true;
+  const id = String(raw.id || "").toLowerCase().trim();
+  if (id.startsWith("source_")) return true;
+  if (id === "istokfire" || id === "istokwater" || id === "istokair" || id === "istokearth") return true;
+  const rarity = String(raw.rarity || "").toLowerCase().trim();
+  return rarity === "source";
+}
+
+function safeArray(raw) {
+  const parsed = safeParse(raw || "null");
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function sourceArtFileById(id) {
+  const key = String(id || "").toLowerCase().trim();
+  if (key === "source_fire" || key === "istokfire") return "istokfire.webp";
+  if (key === "source_water" || key === "istokwater") return "istokwater.webp";
+  if (key === "source_air" || key === "istokair") return "istokair.webp";
+  if (key === "source_earth" || key === "istokearth") return "istokearth.webp";
+  return "";
+}
+
+function sourceCardFromDrop(drop) {
+  if (!drop || typeof drop !== "object") return null;
+  const uid = String(drop.uid || "").trim();
+  if (!uid) return null;
+
+  const id = String(drop.id || "").trim();
+  const element = normalizeElement(drop.element || "");
+  const level = Math.max(1, Math.round(asNum(drop.level, 1)));
+  const title = String(drop.title || drop.name || id || "Джерело");
+  const artFile = sourceArtFileById(id);
+
+  return {
+    uid,
+    id,
+    title,
+    name: title,
+    element,
+    level,
+    power: 1,
+    basePower: 1,
+    rarity: 1,
+    inDeck: false,
+    protected: false,
+    isSource: true,
+    artFile: artFile || "",
+    droppedAt: asNum(drop.droppedAt, Date.now()),
+  };
+}
+
+function mergeSourceCardsFromStorage(baseInventory) {
+  const inventory = Array.isArray(baseInventory) ? baseInventory.slice() : [];
+  const rawStorage = safeParse(localStorage.getItem("cardastika:inventory") || "null");
+  const storageInventory = Array.isArray(rawStorage) ? rawStorage : [];
+
+  const seenUids = new Set(inventory.map((c) => String(c?.uid || "").trim()).filter(Boolean));
+  let changed = false;
+
+  for (const c of storageInventory) {
+    if (!isSourceCardLike(c)) continue;
+    const uid = String(c?.uid || "").trim();
+    if (!uid || seenUids.has(uid)) continue;
+    inventory.push({
+      ...c,
+      inDeck: false,
+      protected: false,
+      isSource: true,
+    });
+    seenUids.add(uid);
+    changed = true;
+  }
+
+  const drops = safeArray(localStorage.getItem(SOURCE_DROPS_KEY));
+  const consumed = new Set(safeArray(localStorage.getItem(SOURCE_CONSUMED_KEY)).map((x) => String(x || "").trim()).filter(Boolean));
+  for (const d of drops) {
+    const uid = String(d?.uid || "").trim();
+    if (!uid || seenUids.has(uid) || consumed.has(uid)) continue;
+    const card = sourceCardFromDrop(d);
+    if (!card) continue;
+    inventory.push(card);
+    seenUids.add(uid);
+    changed = true;
+  }
+
+  return { inventory, changed };
+}
+
 function readState() {
   const acc = window.AccountSystem?.getActive?.() || null;
   if (acc) {
+    const merged = mergeSourceCardsFromStorage(Array.isArray(acc.inventory) ? acc.inventory : []);
+    if (merged.changed && window.AccountSystem?.updateActive) {
+      try {
+        window.AccountSystem.updateActive((activeAcc) => {
+          activeAcc.inventory = merged.inventory.slice();
+          return null;
+        });
+      } catch {
+        // ignore
+      }
+    }
     return {
       source: "account",
       deck: Array.isArray(acc.deck) ? acc.deck : [],
-      inventory: Array.isArray(acc.inventory) ? acc.inventory : [],
+      inventory: merged.inventory,
     };
   }
 
   const deck = safeParse(localStorage.getItem("cardastika:deck") || "null");
-  const inventory = safeParse(localStorage.getItem("cardastika:inventory") || "null");
+  const inventoryRaw = safeParse(localStorage.getItem("cardastika:inventory") || "null");
+  const merged = mergeSourceCardsFromStorage(Array.isArray(inventoryRaw) ? inventoryRaw : []);
+  if (merged.changed) {
+    try {
+      localStorage.setItem("cardastika:inventory", JSON.stringify(merged.inventory));
+    } catch {
+      // ignore
+    }
+  }
   return {
     source: "storage",
     deck: Array.isArray(deck) ? deck : [],
-    inventory: Array.isArray(inventory) ? inventory : [],
+    inventory: merged.inventory,
   };
 }
 

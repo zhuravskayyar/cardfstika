@@ -5146,6 +5146,12 @@ p, span, div:not(.hud__title):not(.panel__title):not(.tile__label) {
   font-family: "EB Garamond", serif;
 }
 
+.duel-result-rewards[hidden],
+.duel-result-reward[hidden],
+.duel-result-simple-lines[hidden]{
+  display: none !important;
+}
+
 .duel-result-reward img{
   width: 18px;
   height: 18px;
@@ -9970,6 +9976,10 @@ img.inventory-slot__icon {
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  width: 100px;
+  min-width: 100px;
+  height: 120px;
+  flex: 0 0 100px;
 }
 
 .battle-card-slot .ref-card {
@@ -10263,46 +10273,230 @@ img.inventory-slot__icon {
   transition: all 0.2s ease;
 }
 
-.battle-cards .ref-card.is-attacking {
-  animation: duel-card-attack 0.22s ease-out;
+/* ===================== DUEL FX PALETTE (COLORABLE) ===================== */
+:root{
+  --fx-gold: var(--heraldic-gold);
+  --fx-red: var(--heraldic-red);
+  --fx-blue: var(--heraldic-blue);
+  --fx-green: var(--heraldic-green);
+
+  --fx-gold-glow: var(--glow-gold);
+  --fx-red-glow: var(--glow-red);
+  --fx-blue-glow: rgba(42,79,110,0.35);
+  --fx-green-glow: rgba(58,92,58,0.35);
+
+  --duel-fx: var(--fx-gold);
+  --duel-fx-glow: var(--fx-gold-glow);
 }
 
+.duel-fx--gold  { --duel-fx: var(--fx-gold);  --duel-fx-glow: var(--fx-gold-glow); }
+.duel-fx--red   { --duel-fx: var(--fx-red);   --duel-fx-glow: var(--fx-red-glow); }
+.duel-fx--blue  { --duel-fx: var(--fx-blue);  --duel-fx-glow: var(--fx-blue-glow); }
+.duel-fx--green { --duel-fx: var(--fx-green); --duel-fx-glow: var(--fx-green-glow); }
+
+.duel-attack-clone,
+.duel-flight-original {
+  position: fixed;
+  margin: 0;
+  z-index: 9999;
+  pointer-events: none;
+  transform-origin: center;
+  will-change: transform;
+  overflow: visible !important;
+  filter:
+    drop-shadow(0 10px 18px rgba(0,0,0,0.55))
+    drop-shadow(0 0 18px var(--duel-fx-glow));
+}
+
+.duel-flight-original{
+  filter:
+    drop-shadow(0 10px 18px rgba(0,0,0,0.55))
+    drop-shadow(0 0 18px var(--duel-fx-glow))
+    blur(var(--mb, 0px));
+}
+
+.duel-flight-original.fx-trail::before{
+  content: "";
+  position: absolute;
+  left: -62px;
+  top: 50%;
+  width: 74px;
+  height: 12px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--duel-fx) 70%, transparent),
+    transparent
+  );
+  opacity: .85;
+  filter: blur(.3px);
+}
+
+.ref-card.fx-anticipate{
+  animation: fx-anticipation 0.12s ease-out;
+}
+
+@keyframes fx-anticipation{
+  0%{ transform: translate(0,0) scale(1); }
+  45%{ transform: translate(-6px,8px) scale(.985); }
+  100%{ transform: translate(0,0) scale(1); }
+}
+
+.battle-arena-frame.fx-shake{
+  animation: fx-camshake 0.16s ease;
+}
+
+@keyframes fx-camshake{
+  0%{ transform: translate(0,0); }
+  25%{ transform: translate(-6px, 2px); }
+  55%{ transform: translate(5px, -3px); }
+  100%{ transform: translate(0,0); }
+}
+
+@keyframes fx-recoil {
+  0%   { transform: translate(0,0) scale(1); }
+  35%  { transform: translate(var(--recoil-x, 0px), var(--recoil-y, 0px)) scale(0.985); }
+  100% { transform: translate(0,0) scale(1); }
+}
+
+.ref-card.fx-recoil {
+  animation: fx-recoil 180ms cubic-bezier(.2,.9,.2,1);
+}
+
+.battle-cards .ref-card.hit {
+  animation: duel-hit-shake 0.22s ease;
+}
+
+.battle-cards .ref-card.flash {
+  animation: duel-hit-flash 0.22s ease;
+}
+
+.battle-cards .ref-card.hit.flash,
 .battle-cards .ref-card.is-hit {
-  animation: duel-card-hit 0.24s ease-out;
+  animation:
+    duel-hit-shake 0.22s ease,
+    duel-hit-flash 0.22s ease;
+  outline: 2px solid rgba(184, 148, 70, 0.42);
+  outline: 2px solid color-mix(in oklab, var(--duel-fx) 70%, transparent);
+  outline-offset: 3px;
 }
 
-@keyframes duel-card-attack {
-  0% {
-    transform: translateY(0) scale(1);
-    filter: brightness(1);
+.battle-cards .ref-card{
+  position: relative;
+}
+
+.battle-cards .ref-card::after{
+  content: "";
+  position: absolute;
+  inset: -16px;
+  border-radius: 18px;
+  pointer-events: none;
+  opacity: 0;
+  border: 2px solid rgba(184, 148, 70, 0.7);
+  border: 2px solid color-mix(in oklab, var(--duel-fx) 70%, transparent);
+  transform: scale(.75);
+  z-index: 8;
+}
+
+.battle-cards .ref-card.fx-impact::after{
+  animation: fx-ring 0.22s ease-out forwards;
+}
+
+@keyframes fx-ring{
+  0%{
+    opacity: 0;
+    transform: scale(.75);
   }
-  60% {
-    transform: translateY(-8px) scale(1.04);
-    filter: brightness(1.1);
+  35%{
+    opacity: .9;
   }
-  100% {
-    transform: translateY(0) scale(1);
-    filter: brightness(1);
+  100%{
+    opacity: 0;
+    transform: scale(1.15);
   }
 }
 
-@keyframes duel-card-hit {
+.battle-cards .ref-card.fx-flip{
+  transition: transform 260ms cubic-bezier(.2,.9,.2,1);
+  will-change: transform;
+}
+
+@keyframes duel-hit-shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-4px, 2px); }
+  40% { transform: translate(5px, -2px); }
+  60% { transform: translate(-3px, -1px); }
+  80% { transform: translate(3px, 2px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes duel-hit-flash {
   0% {
-    transform: translateX(0) scale(1);
-    filter: brightness(1);
+    filter: brightness(1) saturate(1);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
   }
-  25% {
-    transform: translateX(-5px) scale(0.985);
-    filter: brightness(1.18) saturate(1.08);
-  }
-  60% {
-    transform: translateX(4px) scale(0.99);
-    filter: brightness(1.08);
+  35% {
+    filter: brightness(1.55) saturate(1.25);
+    box-shadow: 0 0 26px var(--duel-fx-glow);
   }
   100% {
-    transform: translateX(0) scale(1);
-    filter: brightness(1);
+    filter: brightness(1) saturate(1);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
   }
+}
+
+.fx-spark{
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  background: color-mix(in oklab, var(--duel-fx) 70%, white);
+  box-shadow: 0 0 14px var(--duel-fx-glow);
+  opacity: 0;
+}
+
+@keyframes fx-spark {
+  0%   { opacity: 0; transform: translate(0,0) scale(.9); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(.3); }
+}
+
+.duel-dmg {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  transform: translate(-50%, 0);
+  z-index: 6;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffd3d3;
+  color: color-mix(in oklab, var(--duel-fx) 55%, #ffd3d3);
+  text-shadow:
+    0 2px 0 rgba(0,0,0,.75),
+    0 10px 18px rgba(0,0,0,.55),
+    0 0 18px var(--duel-fx-glow);
+  pointer-events: none;
+  opacity: 0;
+}
+
+@keyframes duel-dmg-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.9);
+  }
+  20% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -26px) scale(1.08);
+  }
+}
+
+.duel-dmg.show {
+  animation: duel-dmg-pop 0.7s ease forwards;
 }
 
 /* Battle log entries */

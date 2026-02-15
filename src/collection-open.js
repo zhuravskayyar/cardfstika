@@ -111,9 +111,22 @@ function normalizeArtFileName(rawFile) {
   return s;
 }
 
+const SOURCE_ART_FILE_BY_ID = Object.freeze({
+  source_fire: "istokfire.webp",
+  source_water: "istokwater.webp",
+  source_air: "istokair.webp",
+  source_earth: "istokearth.webp",
+  istokfire: "istokfire.webp",
+  istokwater: "istokwater.webp",
+  istokair: "istokair.webp",
+  istokearth: "istokearth.webp",
+});
+
 function artFileFromCardId(cardId) {
   const id = String(cardId || "").trim();
   if (!id) return "";
+  const mapped = SOURCE_ART_FILE_BY_ID[id.toLowerCase()];
+  if (mapped) return mapped;
   return normalizeArtFileName(id);
 }
 
